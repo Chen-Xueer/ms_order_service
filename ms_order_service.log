@@ -1,0 +1,24 @@
+05/16/2024 09:44:03 AM - microservice_utils.settings - INFO - Starting kafka connection
+05/16/2024 09:44:03 AM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/16/2024 09:44:03 AM - microservice_utils.settings - INFO - Database Initialized
+05/16/2024 09:44:03 AM - microservice_utils.settings - INFO - Starting Flask server
+05/16/2024 09:44:47 AM - microservice_utils.settings - INFO - Starting kafka connection
+05/16/2024 09:44:47 AM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/16/2024 09:44:47 AM - microservice_utils.settings - INFO - Database Initialized
+05/16/2024 09:44:47 AM - microservice_utils.settings - INFO - Starting Flask server
+05/16/2024 09:45:16 AM - microservice_utils.settings - INFO - Starting kafka connection
+05/16/2024 09:45:16 AM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/16/2024 09:45:17 AM - microservice_utils.settings - INFO - Database Initialized
+05/16/2024 09:45:17 AM - microservice_utils.settings - INFO - Starting Flask server
+05/16/2024 09:45:17 AM - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:7031
+ * Running on http://192.168.37.17:7031
+05/16/2024 09:45:17 AM - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+05/16/2024 09:45:17 AM - werkzeug - INFO -  * Restarting with stat
+05/16/2024 09:45:17 AM - microservice_utils.settings - INFO - Starting kafka connection
+05/16/2024 09:45:17 AM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/16/2024 09:45:17 AM - microservice_utils.settings - INFO - Database Initialized
+05/16/2024 09:45:17 AM - microservice_utils.settings - INFO - Starting Flask server
+05/16/2024 09:45:17 AM - werkzeug - WARNING -  * Debugger is active!
+05/16/2024 09:45:17 AM - werkzeug - INFO -  * Debugger PIN: 620-487-774

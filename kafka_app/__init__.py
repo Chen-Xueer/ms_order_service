@@ -7,8 +7,10 @@ def app_init():
 
     kafka_app.consume(
         [
+            MsOrderManagement.CreateOrder.value,
+            MsOrderManagement.RejectOrder.value,
+            MsEvDriverManagement.DriverVerificationResponse.value,
             MsPaymentManagement.AuthorizePaymentResponse.value,
-            MsEvDriverManagement.DriverVerificationRequest.value
         ],
         handler,
     )

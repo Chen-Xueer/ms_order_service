@@ -144,3 +144,5 @@ async def kafka_send(topic: str, data: dict, request_id: str):
         )
     except Exception as e:
         print(f"Error publishing message to Kafka broker: {e}")
+
+

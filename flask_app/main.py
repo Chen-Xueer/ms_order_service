@@ -1,4 +1,4 @@
-from flask_app.routes.example import ns as example_namespace
+from flask_app.routes import ns_mobile as ns_mobile
 from microservice_utils.flask_init import flask_restx_init
 
 app, api = flask_restx_init(
@@ -8,4 +8,4 @@ app, api = flask_restx_init(
     swagger_doc="/swagger",
 )
 
-api.add_namespace(example_namespace, path="/example")
+api.add_namespace(ns_mobile, path="/")
