@@ -1,8 +1,9 @@
 import uuid
 from flask_app.database_sessions import Database
 from flask_app.services.common_function import DataValidation
+from flask_app.services.create_order import CreateOrder
 from microservice_utils.settings import logger
-from ms_tools.kafka_management.topics import MsCSMSManagement,MsEVSEManagement,MsPaymentManagement
+from ms_tools.kafka_management.topics import MsCSMSManagement,MsEVSEManagement,MsPaymentManagement,MsEvDriverManagement
 from sqlalchemy_.ms_order_service.enum_types import OrderStatus, ReturnActionStatus, ReturnStatus
 from sqlalchemy_.ms_order_service.order import Order
 from sqlalchemy_.ms_order_service.transaction import Transaction
@@ -46,33 +47,32 @@ class UpdateOrder:
             rfid = data.get("data").get("rfid")
             is_charging = data.get("data").get("is_charging")
             is_reservation = data.get("data").get("is_reservation")
-            requires_payment = data.get("data").get("requires_payment")
-            tenant = data.get("data").get("tenant")
+            payment_required_ind = data.get("data").get("payment_required_ind")
+            tenant_id = data.get("data").get("tenant_id")
             trigger_method = data.get("data").get("trigger_method")
             status_code = data.get("data").get("status_code")
             expiry_date = data.get("data").get("expiry_date")
 
             order_exist = self.validate_data(transaction_id)
             if order_exist == False:
-                data.update({
-                    "status": "error",
-                    "error": "transaction_id not found",
-                    "status_code": 400
-                })
-            
+                create_order = CreateOrder()
+                order_exist = create_order.create_order_rfid(data = data)
+
             if isinstance(order_exist,Order):
-                if trigger_method=="authorization" and status_code==200 and order_exist.status==None:
-                    order_status = OrderStatus.AUTHORIZED.value
-                elif trigger_method == "remote_start" and status_code==200 and order_exist.status==None:
-                    order_status = OrderStatus.AUTHORIZED.value
-                elif trigger_method == "make_reservation" and status_code==200:
-                    order_status = OrderStatus.RESERVING.value
-                elif trigger_method == "start_transaction" and status_code==200:
-                    order_status = OrderStatus.CHARGING.value
-                elif trigger_method=="authorization" and status_code in (400,409):
-                    order_status = OrderStatus.AUTHORIZEDFAILED.value
-                elif trigger_method in ("remote_start","make_reservation","start_transaction") and status_code in (400,409):
-                    order_status = OrderStatus.CANCELLED.value
+                old_status = order_exist.status
+                if status_code==200:
+                    if (
+                        (trigger_method == "remote_start" and order_exist.status == OrderStatus.AUTHORIZED.value)
+                        or (trigger_method == "start_transaction" and order_exist.status == OrderStatus.RESERVING.value)
+                    ):
+                        order_status = OrderStatus.CHARGING.value
+                        charging_ind=True
+                    elif trigger_method == "make_reservation"and order_exist.status == OrderStatus.AUTHORIZED.value:
+                        order_status = OrderStatus.RESERVING.value
+                        reservation_ind=True
+                else:
+                    if trigger_method in ("start_transaction"):
+                        order_status = OrderStatus.CANCELLED.value
                     
                 order_exist.update({
                     "charge_point_id": charge_point_id,
@@ -81,12 +81,24 @@ class UpdateOrder:
                     "rfid": rfid,
                     "is_charging": is_charging,
                     "is_reservation": is_reservation,
-                    "requires_payment": requires_payment,
-                    "tenant": tenant,
+                    "payment_required_ind": payment_required_ind,
+                    "tenant_id": tenant_id,
                     "status": order_status,
                     "last_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 })
+
+                self.session.query(Transaction).filter(Transaction.transaction_id == transaction_id).update({
+                    "transaction_detail": f"{trigger_method} Initated. Order status updated from {old_status} to {order_exist.status}",
+                })
                 self.session.commit()
+
+                data = data["data"].update(
+                    {
+                        "is_reservation":charging_ind,
+                        "is_charging":reservation_ind,
+                        "status":"200",
+                    }
+                )
 
                 if order_status == OrderStatus.AUTHORIZEDFAILED.value:
                     if mobile_id is not None:
@@ -95,27 +107,22 @@ class UpdateOrder:
                         kafka_send(topic=MsCSMSManagement.AuthorizationFailed.value,data=data,request_id=request_id)
                     
                     ###KAFKA OUT TO PAYMENT SERVICE
-                    if requires_payment == True:
+                    if payment_required_ind == True:
                         kafka_send(topic=MsPaymentManagement.CancelPaymentRequest.value,data=data,request_id=request_id)
-                elif order_status == OrderStatus.AUTHORIZED.value:
+                elif order_status in OrderStatus.CHARGING.value:
                     if mobile_id is not None:
                         kafka_send(topic=MsEVSEManagement.StartTransaction.value,data=data,request_id=request_id)
                     if rfid is not None:
                         kafka_send(topic=MsCSMSManagement.StartTransaction.value,data=data,request_id=request_id)
-                elif order_status == OrderStatus.CHARGING.value:
-                    if mobile_id is not None:
-                        #kafka_send(topic=MsEVSEManagement.RemoteStart.value,data=data,request_id=request_id)
-                        pass
-                    if rfid is not None:
-                        #kafka_send(topic=MsCSMSManagement.RemoteStart.value,data=data,request_id=request_id)
-                        pass
+                    kafka_send(topic=MsEvDriverManagement.UpdateDriverStatus.value,data=data,request_id=request_id)
                 elif order_status == OrderStatus.RESERVING.value:
                     if mobile_id is not None:
                         kafka_send(topic=MsEVSEManagement.MakeReservation.value,data=data,request_id=request_id)
                     if rfid is not None:
                         kafka_send(topic=MsCSMSManagement.MakeReservation.value,data=data,request_id=request_id)
+                    kafka_send(topic=MsEvDriverManagement.UpdateDriverStatus.value,data=data,request_id=request_id)
                 elif order_status == OrderStatus.CANCELLED.value:
-                    if requires_payment == True:
+                    if payment_required_ind == True:
                         kafka_send(topic=MsPaymentManagement.CancelPaymentRequest.value,data=data,request_id=request_id)
         except Exception as e:
             logger.error(f"(X) Error while creating order: {e}")

@@ -8,7 +8,7 @@ skinparam linetype ortho
 
 entity "order" as order {
     *transactional_id : number <<generated>>
-    *tenant: character varying
+    *tenant_id: character varying
     --
     *status : character varying
     charge_point_id : character varying
@@ -16,8 +16,8 @@ entity "order" as order {
     driver_id : character varying
     rfid: character varying
     tariff_id : character varying
-    charging_ind : boolean
-    reservation_ind : boolean
+    is_charging : boolean
+    is_reservation : boolean
     payment_required_ind : boolean
     create_at : timestamp
     last_update : timestamp

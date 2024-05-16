@@ -18,7 +18,7 @@ class CreateOrder:
     def db_insert_order(self,**kwargs):
         try:
             data = kwargs.get("data")
-            tenant = data.get("data").get("tenant")
+            tenant_id = data.get("data").get("tenant_id")
             charge_point_id = data.get("data").get("charge_point_id")
             connector_id = data.get("data").get("connector_id")
             mobile_id = data.get("data").get("driver_id")
@@ -26,9 +26,9 @@ class CreateOrder:
             trigger_method = data.get("meta").get("trigger_method")
             
             if 'start_charging' in trigger_method:
-                charge_ind=True
+                charging_ind=True
             else:
-                charge_ind=False
+                charging_ind=False
             
             if 'make_reservation' in trigger_method:
                 reservation_ind=True
@@ -36,18 +36,18 @@ class CreateOrder:
                 reservation_ind=False
 
             order_created = Order(
-                            tenant=tenant,
+                            tenant_id_id=tenant_id,
                             status=OrderStatus.CREATED.value,
                             charge_point_id=charge_point_id,
                             connector_id=connector_id,
                             driver_id=mobile_id,
                             rfid=rfid,
                             tariff_id=None,
-                            charging_ind=charge_ind,
-                            reservation_ind=reservation_ind,
+                            is_charging=charging_ind,
+                            is_reservation=reservation_ind,
                             payment_required_ind=False,
-                            create_dt=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            modify_dt=None
+                            create_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            last_update=None
                         )
             self.session.add(order_created)
             self.session.commit()
@@ -57,15 +57,15 @@ class CreateOrder:
             self.session.rollback()
             return {"message": "insert order failed", "action":"order_creation","action_status":ReturnActionStatus.FAILED.value,"status": ReturnStatus.ERROR.value},500
 
-    def db_insert_transaction(self,transactional_id):
+    def db_insert_transaction(self,transaction_id,trans_det):
         try:
             transaction_created = Transaction(
-                            transactional_id=transactional_id,
+                            transaction_id=transaction_id,
                             amount=None,
-                            energy_charged=None,
+                            charged_energy=None,
                             duration=None,
                             paid_by=None,
-                            trans_det=None
+                            transaction_detail=trans_det
                         )
             self.session.add(transaction_created)
             self.session.commit()
@@ -76,7 +76,7 @@ class CreateOrder:
             return {"message": "insert transaction failed", "action":"transaction_creation","action_status":ReturnActionStatus.FAILED.value,"status": ReturnStatus.ERROR.value},500
 
 
-    def create_order_mobile_id(self,mobile_id,data,tenant):
+    def create_order_mobile_id(self,mobile_id,data,tenant_id):
         try:
             data = data["meta"].update(
                 {
@@ -91,15 +91,17 @@ class CreateOrder:
             connector_id = data.get("data").get("connector_id")
             trigger_method = data.get("data").get("trigger_method")
             request_id = str(uuid.uuid4())
-            requires_payment = data.get("data").get("requires_payment")
+            payment_required_ind = data.get("data").get("payment_required_ind")
 
             order_created = self.db_insert_order(data=data)
             if not isinstance(order_created,Order):
                 return order_created
             
-            transaction_created = self.db_insert_transaction(order_created.transactional_id)
+            trans_det = f"Order created for {trigger_method}"
+            
+            transaction_created = self.db_insert_transaction(transaction_id=order_created.transaction_id,trans_det=trans_det)
             if not isinstance(transaction_created,Transaction):
-                self.session.query(Order).filter(Order.transactional_id==order_created.transactional_id).delete()
+                self.session.query(Order).filter(Order.transaction_id==order_created.transaction_id).delete()
                 self.session.commit()
                 return transaction_created
             
@@ -107,13 +109,13 @@ class CreateOrder:
                 data = {
                     "meta": {
                         "request_id": request_id,
-                        "timestamp": order_created.create_dt,
+                        "timestamp": order_created.create_at,
                         "producer": "ms_order_service",
                         "version": "1.0",
                         "type": "order_creation"
                     },
                     "data": {
-                        "transaction_id": order_created.transactional_id,
+                        "transaction_id": order_created.transaction_id,
                         "charge_point_id": charge_point_id,
                         "connector_id": connector_id,
                         "mobile_id": mobile_id,
@@ -121,8 +123,8 @@ class CreateOrder:
                         "start_time": order_created.start_time,
                         "is_reservation": False,
                         "is_charging": False,
-                        "tenant": tenant,
-                        "requires_payment": False,
+                        "tenant_id": tenant_id,
+                        "payment_required_ind": False,
                         "status": "success",
                         "status_code": 201,
                     }
@@ -133,13 +135,13 @@ class CreateOrder:
                 response = kafka_out_wait_response(topic=MsEvDriverManagement.DriverVerificationRequest.value,data=data,return_topic=MsEvDriverManagement.DriverVerificationResponse.value)
 
                 if response.get("data").get("status") == "200":
-                    self.session.query(Order).filter(Order.transactional_id==order_created.transactional_id).update({"status":OrderStatus.AUTHORIZED.value})
+                    self.session.query(Order).filter(Order.transaction_id==order_created.transaction_id).update({"status":OrderStatus.AUTHORIZED.value})
                     self.session.commit()
 
                 if response.get("data").get("status") == "400":
-                    self.session.query(Order).filter(Order.transactional_id==order_created.transactional_id).update({"status":OrderStatus.AUTHORIZEDFAILED.value})
+                    self.session.query(Order).filter(Order.transaction_id==order_created.transaction_id).update({"status":OrderStatus.AUTHORIZEDFAILED.value})
                     self.session.commit()
-                    if requires_payment == True:
+                    if payment_required_ind == True:
                         kafka_send(topic=MsPaymentManagement.CancelPaymentRequest.value,data=data,request_id=request_id)
         
         except Exception as e:
@@ -161,20 +163,22 @@ class CreateOrder:
 
         try:
             rfid = data.get("data").get("rfid")
-            tenant = data.get("data").get("tenant")
+            tenant_id = data.get("data").get("tenant_id")
             charge_point_id = data.get("data").get("charge_point_id")
             connector_id = data.get("data").get("connector_id")
             trigger_method = data.get("data").get("trigger_method")
             request_id = str(uuid.uuid4())
-            requires_payment = data.get("data").get("requires_payment")
+            payment_required_ind = data.get("data").get("payment_required_ind")
 
             order_created = self.db_insert_order(data=data)
             if not isinstance(order_created,Order):
                 return order_created
+
+            trans_det = f"Order created for {trigger_method}"
             
-            transaction_created = self.db_insert_transaction(order_created.transactional_id)
+            transaction_created = self.db_insert_transaction(transaction_id=order_created.transaction_id,trans_det=trans_det)
             if not isinstance(transaction_created,Transaction):
-                self.session.query(Order).filter(Order.transactional_id==order_created.transactional_id).delete()
+                self.session.query(Order).filter(Order.transaction_id==order_created.transaction_id).delete()
                 self.session.commit()
                 return transaction_created
             
@@ -182,13 +186,13 @@ class CreateOrder:
                 data = {
                     "meta": {
                         "request_id": request_id,
-                        "timestamp": order_created.create_dt,
+                        "timestamp": order_created.create_at,
                         "producer": "ms_order_service",
                         "version": "1.0",
                         "type": "order_creation"
                     },
                     "data": {
-                        "transaction_id": order_created.transactional_id,
+                        "transaction_id": order_created.transaction_id,
                         "charge_point_id": charge_point_id,
                         "connector_id": connector_id,
                         "rfid": rfid,
@@ -196,8 +200,8 @@ class CreateOrder:
                         "start_time": order_created.start_time,
                         "is_reservation": False,
                         "is_charging": False,
-                        "tenant": tenant,
-                        "requires_payment": False,
+                        "tenant_id": tenant_id,
+                        "payment_required_ind": False,
                         "status": "success",
                         "status_code": 201,
                     }
@@ -205,15 +209,17 @@ class CreateOrder:
 
                 response = kafka_out_wait_response(topic=MsEvDriverManagement.DriverVerificationRequest.value,data=data,return_topic=MsEvDriverManagement.DriverVerificationResponse.value)
 
-                if response.get("data").get("status") == "200":
-                    self.session.query(Order).filter(Order.transactional_id==order_created.transactional_id).update({"status":OrderStatus.AUTHORIZED.value})
+                if response.get("data").get("status") == "200" and trigger_method in ("remote_start","make_reservation","authorization"):
+                    self.session.query(Order).filter(Order.transaction_id==order_created.transaction_id).update({"status":OrderStatus.AUTHORIZED.value})
                     self.session.commit()
 
-                if response.get("data").get("status") == "400":
-                    self.session.query(Order).filter(Order.transactional_id==order_created.transactional_id).update({"status":OrderStatus.AUTHORIZEDFAILED.value})
+                if response.get("data").get("status") == "400" and trigger_method in ("remote_start","make_reservation","authorization"):
+                    self.session.query(Order).filter(Order.transaction_id==order_created.transaction_id).update({"status":OrderStatus.AUTHORIZEDFAILED.value})
                     self.session.commit()
-                    if requires_payment == True:
+                    if payment_required_ind == True:
                         kafka_send(topic=MsPaymentManagement.CancelPaymentRequest.value,data=data,request_id=request_id)
+                
+                return order_created
 
         except Exception as e:
             logger.error(f"(X) Error while creating order: {e}")

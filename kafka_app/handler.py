@@ -48,7 +48,6 @@ def handler(message: KafkaMessage):
 
 
 
-
 def validate_request(message: KafkaMessage):
     validate = {"error_description":{}}
 

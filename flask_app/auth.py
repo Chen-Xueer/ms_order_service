@@ -19,7 +19,7 @@ def get_condition(condition: bool):
 
 
 def _get_cognito_public_key(
-    token: str, tenant: Optional[str]
+    token: str, tenant_id: Optional[str]
 ) -> Tuple[dict, str, Optional[str]]:
     region = app.config["AWS_REGION"]
 
@@ -71,12 +71,12 @@ def _get_cognito_public_key(
 
     # and the Audience  (use claims['client_id'] if verifying an access token)
     if (
-        claims.get("aud") != tenant.ev_user_pool_client_id
-        and claims.get("client_id") != tenant.ev_user_pool_client_id
+        claims.get("aud") != tenant_id.ev_user_pool_client_id
+        and claims.get("client_id") != tenant_id.ev_user_pool_client_id
     ):
         raise Exception("Token was not issued for this audience")
 
-    return keys[key_index], tenant.tenant, tenant.ev_user_pool_client_id
+    return keys[key_index], tenant_id.tenant_id, tenant_id.ev_user_pool_client_id
 
 
 def decode_token(token):
@@ -85,15 +85,15 @@ def decode_token(token):
 
 def token_callback(request: Request, token: str) -> None:
 
-    tenant = None
+    tenant_id = None
     data: Optional[dict[str, str]] = request.json
     if data is not None:
-        tenant = data.get("tenant", None)
+        tenant_id = data.get("tenant_id", None)
 
     claims = decode_token(token)
 
-    public_key, tenant, client_id = _get_cognito_public_key(
-        token, tenant
+    public_key, tenant_id, client_id = _get_cognito_public_key(
+        token, tenant_id
     )
     jwt.decode(
         token,
@@ -106,9 +106,9 @@ def token_callback(request: Request, token: str) -> None:
     try:
         if (
             request.json is not None
-            and request.json.get("tenant", None) is None
+            and request.json.get("tenant_id", None) is None
         ):
-            request.json["tenant"] = tenant
+            request.json["tenant_id"] = tenant_id
             request.json["user_sub"] = claims["sub"]
 
     except Exception as e:

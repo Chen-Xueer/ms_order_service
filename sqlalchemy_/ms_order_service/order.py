@@ -10,7 +10,7 @@ class Order(Base):
     __table_args__ = (UniqueConstraint('transaction_id'),)
     
     transaction_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    tenant_id: Mapped[str] = mapped_column(String(50), nullable=False)
+    tenant_id_id: Mapped[str] = mapped_column(String(50), nullable=False)
     status: Mapped[str] = mapped_column(String(50), nullable=False)
     charge_point_id: Mapped[str] = mapped_column(String(50), nullable=False)
     connector_id: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -19,7 +19,7 @@ class Order(Base):
     tariff_id: Mapped[int] = mapped_column(Integer, nullable=False)
     is_charging: Mapped[bool] = mapped_column(Boolean, nullable=False)
     is_reservation: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    requires_payment: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    payment_required_ind: Mapped[bool] = mapped_column(Boolean, nullable=False)
     create_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     last_update: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 

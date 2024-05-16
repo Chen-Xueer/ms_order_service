@@ -22,11 +22,11 @@ class order(Resource):
     def post(self,mobile_id):
         #token = str(request.headers["Authorization"])
         #claims = decode_token(token)
-        tenant = 'TenantA'
+        tenant_id = 'tenant_idA'
 
         data = request.json
 
         create_order = CreateOrder()
-        return create_order.create_order_mobile_id(mobile_id=mobile_id,data=data,tenant=tenant)
+        return create_order.create_order_mobile_id(mobile_id=mobile_id,data=data,tenant_id=tenant_id)
     
 

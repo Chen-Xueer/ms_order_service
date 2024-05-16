@@ -23,10 +23,10 @@ class ResponseModel:
             "driver_id": fields.String(description="driver_id", required=True),
             "trigger_method": fields.String(description="trigger_method", required=True),
             "start_time": fields.DateTime(description="start_time", required=True),
-            "is_reservation": fields.Boolean(description="reservation_ind", required=True),
-            "is_charging": fields.Boolean(description="charging_ind", required=True),
-            "tenant": fields.String(description="tenant", required=True),
-            "requires_payment": fields.Boolean(description="payment_required", required=True),
+            "is_reservation": fields.Boolean(description="is_reservation", required=True),
+            "is_charging": fields.Boolean(description="is_charging", required=True),
+            "tenant_id": fields.String(description="tenant_id", required=True),
+            "payment_required_ind": fields.Boolean(description="payment_required", required=True),
             "status": fields.String(description="status", required=True),
             "status_code": fields.Integer(description="status_code", required=True),
         }
@@ -58,10 +58,10 @@ class RequestModel:
             "driver_id": fields.String(description="driver_id", required=True),
             "trigger_method": fields.String(description="trigger_method", required=True),
             "start_time": fields.DateTime(description="start_time", required=True),
-            "is_reservation": fields.Boolean(description="reservation_ind", required=True),
-            "is_charging": fields.Boolean(description="charging_ind", required=True),
-            "tenant": fields.String(description="tenant", required=True),
-            "requires_payment": fields.Boolean(description="payment_required", required=True)
+            "is_reservation": fields.Boolean(description="is_reservation", required=True),
+            "is_charging": fields.Boolean(description="is_charging", required=True),
+            "tenant_id": fields.String(description="tenant_id", required=True),
+            "payment_required_ind": fields.Boolean(description="payment_required", required=True)
         }
 
         data_models = {
