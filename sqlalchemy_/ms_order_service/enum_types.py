@@ -24,3 +24,16 @@ class ReturnActionStatus(enum.Enum):
 class ReturnStatus(enum.Enum):
     SUCCESS = 'success'
     ERROR = 'error'
+
+class ProducerTypes(enum.Enum):
+    EVSE_AS_SERVICE = "EVSE as a Service"
+    OCPP_AS_SERVICE = "OCPP as a Service"
+    CSMS_AS_SERVICE = "CSMS as a Service"
+    ORDER_SERVICE = "Order Service"
+
+
+class TriggerMethod(enum.Enum):
+    AUTHORIZE = 'authorize'
+    START_TRANSACTION = 'start_transaction'
+    REMOTE_START = 'remote_start'
+    MAKE_RESERVATION = 'make_reservation'

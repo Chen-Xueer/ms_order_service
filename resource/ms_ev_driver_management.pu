@@ -18,7 +18,7 @@ entity "order" as order {
     tariff_id : character varying
     is_charging : boolean
     is_reservation : boolean
-    payment_required_ind : boolean
+    requires_payment : boolean
     create_at : timestamp
     last_update : timestamp
 }

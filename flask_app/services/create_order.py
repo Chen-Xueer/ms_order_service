@@ -10,20 +10,19 @@ from typing import Tuple
 from datetime import datetime
 
 class CreateOrder:
-    def init(self):
-        self.database = Database()
-        self.session = self.database.init_session()
+    def __init__(self):
+        database = Database()
+        self.session = database.init_session()
         self.data_validation = DataValidation()
     
     def db_insert_order(self,**kwargs):
         try:
-            data = kwargs.get("data")
-            tenant_id = data.get("data").get("tenant_id")
-            charge_point_id = data.get("data").get("charge_point_id")
-            connector_id = data.get("data").get("connector_id")
-            mobile_id = data.get("data").get("driver_id")
-            rfid = data.get("data").get("rfid")
-            trigger_method = data.get("meta").get("trigger_method")
+            tenant_id =  kwargs.get("tenant_id")
+            charge_point_id = kwargs.get("charge_point_id")
+            connector_id = kwargs.get("connector_id")
+            ev_driver_id = kwargs.get("id_tag")
+            trigger_method = kwargs.get("trigger_method")
+            
             
             if 'start_charging' in trigger_method:
                 charging_ind=True
@@ -36,16 +35,15 @@ class CreateOrder:
                 reservation_ind=False
 
             order_created = Order(
-                            tenant_id_id=tenant_id,
+                            tenant_id=tenant_id,
                             status=OrderStatus.CREATED.value,
                             charge_point_id=charge_point_id,
                             connector_id=connector_id,
-                            driver_id=mobile_id,
-                            rfid=rfid,
+                            ev_driver_id=ev_driver_id,
                             tariff_id=None,
                             is_charging=charging_ind,
                             is_reservation=reservation_ind,
-                            payment_required_ind=False,
+                            requires_payment=False,
                             create_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                             last_update=None
                         )
@@ -78,7 +76,9 @@ class CreateOrder:
 
     def create_order_mobile_id(self,mobile_id,data,tenant_id):
         try:
-            data = data["meta"].update(
+            request_id = data.get("meta").get("request_id")
+
+            data["meta"].update(
                 {
                     "service_name":"ms_order_service",
                     "timestamp":datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -91,9 +91,20 @@ class CreateOrder:
             connector_id = data.get("data").get("connector_id")
             trigger_method = data.get("data").get("trigger_method")
             request_id = str(uuid.uuid4())
-            payment_required_ind = data.get("data").get("payment_required_ind")
+            requires_payment = data.get("data").get("requires_payment")
+            start_time = data.get("data").get("start_time")
+            
 
-            order_created = self.db_insert_order(data=data)
+            order_created = self.db_insert_order(
+                charge_point_id=charge_point_id,
+                connector_id=connector_id,
+                id_tag=mobile_id,
+                trigger_method=trigger_method,
+                tenant_id=tenant_id
+            )
+
+            logger.info(f"Order created: {order_created}")
+
             if not isinstance(order_created,Order):
                 return order_created
             
@@ -105,45 +116,27 @@ class CreateOrder:
                 self.session.commit()
                 return transaction_created
             
+            logger.info(f"Transaction created: {transaction_created}")
+            
             if isinstance(order_created,Order) and isinstance(transaction_created,Transaction):
-                data = {
-                    "meta": {
-                        "request_id": request_id,
-                        "timestamp": order_created.create_at,
-                        "producer": "ms_order_service",
-                        "version": "1.0",
-                        "type": "order_creation"
-                    },
-                    "data": {
+                data["data"].update(
+                    {
                         "transaction_id": order_created.transaction_id,
                         "charge_point_id": charge_point_id,
                         "connector_id": connector_id,
-                        "mobile_id": mobile_id,
+                        "id_tag": mobile_id,
                         "trigger_method": trigger_method,
-                        "start_time": order_created.start_time,
+                        "start_time": start_time,
                         "is_reservation": False,
                         "is_charging": False,
                         "tenant_id": tenant_id,
-                        "payment_required_ind": False,
-                        "status": "success",
+                        "requires_payment": False,
                         "status_code": 201,
                     }
-                }
+                )
 
                 kafka_send(topic=MsEvDriverManagement.DriverVerificationRequest.value,data=data,request_id=request_id)
 
-                response = kafka_out_wait_response(topic=MsEvDriverManagement.DriverVerificationRequest.value,data=data,return_topic=MsEvDriverManagement.DriverVerificationResponse.value)
-
-                if response.get("data").get("status") == "200":
-                    self.session.query(Order).filter(Order.transaction_id==order_created.transaction_id).update({"status":OrderStatus.AUTHORIZED.value})
-                    self.session.commit()
-
-                if response.get("data").get("status") == "400":
-                    self.session.query(Order).filter(Order.transaction_id==order_created.transaction_id).update({"status":OrderStatus.AUTHORIZEDFAILED.value})
-                    self.session.commit()
-                    if payment_required_ind == True:
-                        kafka_send(topic=MsPaymentManagement.CancelPaymentRequest.value,data=data,request_id=request_id)
-        
         except Exception as e:
             logger.error(f"(X) Error while creating order: {e}")
             self.session.rollback()
@@ -152,7 +145,7 @@ class CreateOrder:
             self.session.close()
     
     def create_order_rfid(self,data):
-        data = data["meta"].update(
+        data["meta"].update(
             {
                 "service_name":"ms_order_service",
                 "timestamp":datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -162,15 +155,25 @@ class CreateOrder:
         )
 
         try:
-            rfid = data.get("data").get("rfid")
+            id_tag = data.get("data").get("id_tag")
             tenant_id = data.get("data").get("tenant_id")
-            charge_point_id = data.get("data").get("charge_point_id")
+            charge_point_id = data.get("evse").get("charge_point_id")
             connector_id = data.get("data").get("connector_id")
             trigger_method = data.get("data").get("trigger_method")
-            request_id = str(uuid.uuid4())
-            payment_required_ind = data.get("data").get("payment_required_ind")
-
-            order_created = self.db_insert_order(data=data)
+            request_id = data.get("meta").get("request_id")
+            requires_payment = data.get("data").get("requires_payment")
+            start_time = data.get("data").get("start_time")
+            
+            logger.info(f"Creating order for RFID: {id_tag}")
+            
+            order_created = self.db_insert_order(
+                charge_point_id=charge_point_id,
+                connector_id=connector_id,
+                id_tag=id_tag,
+                trigger_method=trigger_method,
+                tenant_id=tenant_id,
+            )
+            
             if not isinstance(order_created,Order):
                 return order_created
 
@@ -182,53 +185,36 @@ class CreateOrder:
                 self.session.commit()
                 return transaction_created
             
+            logger.info(f"Transaction created: {transaction_created}")
+
+            
             if isinstance(order_created,Order) and isinstance(transaction_created,Transaction):
-                data = {
-                    "meta": {
-                        "request_id": request_id,
-                        "timestamp": order_created.create_at,
-                        "producer": "ms_order_service",
-                        "version": "1.0",
-                        "type": "order_creation"
-                    },
-                    "data": {
+                data["data"].update(
+                    {
                         "transaction_id": order_created.transaction_id,
                         "charge_point_id": charge_point_id,
                         "connector_id": connector_id,
-                        "rfid": rfid,
+                        "id_tag": id_tag,
                         "trigger_method": trigger_method,
-                        "start_time": order_created.start_time,
+                        "start_time": start_time,
                         "is_reservation": False,
                         "is_charging": False,
                         "tenant_id": tenant_id,
-                        "payment_required_ind": False,
-                        "status": "success",
+                        "requires_payment": False,
                         "status_code": 201,
                     }
-                }
+                )
 
-                response = kafka_out_wait_response(topic=MsEvDriverManagement.DriverVerificationRequest.value,data=data,return_topic=MsEvDriverManagement.DriverVerificationResponse.value)
-
-                if response.get("data").get("status") == "200" and trigger_method in ("remote_start","make_reservation","authorization"):
-                    self.session.query(Order).filter(Order.transaction_id==order_created.transaction_id).update({"status":OrderStatus.AUTHORIZED.value})
-                    self.session.commit()
-
-                if response.get("data").get("status") == "400" and trigger_method in ("remote_start","make_reservation","authorization"):
-                    self.session.query(Order).filter(Order.transaction_id==order_created.transaction_id).update({"status":OrderStatus.AUTHORIZEDFAILED.value})
-                    self.session.commit()
-                    if payment_required_ind == True:
-                        kafka_send(topic=MsPaymentManagement.CancelPaymentRequest.value,data=data,request_id=request_id)
-                
-                return order_created
+                kafka_send(topic=MsEvDriverManagement.DriverVerificationRequest.value,data=data,request_id=request_id)
 
         except Exception as e:
-            logger.error(f"(X) Error while creating order: {e}")
+            logger.error(f"(X) Error while creating order:{e}")
             self.session.rollback()
             return {"message": "create order failed", "action":"order_creation","action_status":ReturnActionStatus.FAILED.value,"status": ReturnStatus.ERROR.value},500
         finally:
             self.session.close()
     
-async def kafka_send(topic: str, data: dict, request_id: str):
+def kafka_send(topic: str, data: dict, request_id: str):
     from kafka_app.main import kafka_app
     from ms_tools.kafka_management.kafka_topic import Topic
     try:
@@ -241,17 +227,3 @@ async def kafka_send(topic: str, data: dict, request_id: str):
         )
     except Exception as e:
         print(f"Error publishing message to Kafka broker: {e}")
-
-
-
-def kafka_out_wait_response(topic, data,return_topic):
-    from kafka_app.main import kafka_app
-    from ms_tools.kafka_management.kafka_topic import Topic
-    response = kafka_app.send(
-        topic=Topic(
-            name=topic,
-            data=data,
-            return_topic=return_topic,
-        ),
-    )
-    return response.payload

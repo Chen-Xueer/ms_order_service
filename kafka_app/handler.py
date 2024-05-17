@@ -31,15 +31,12 @@ def handler(message: KafkaMessage):
             create_order.create_order_rfid(data = data)
             
         if message.topic in (
+            MsEvDriverManagement.DriverVerificationResponse.value,
             MsOrderManagement.RejectOrder.value
         ):
             update_order = UpdateOrder()   
             update_order.update_order(data = data)   
-        
-        if message.topic in [MsEvDriverManagement.DriverVerificationResponse.value]:
-            from kafka_app.main import kafka_app
-            kafka_app.router.put_message(message)
-   
+            
     except Exception as e:
         session.rollback()
         logger.error(e)
@@ -53,30 +50,36 @@ def validate_request(message: KafkaMessage):
 
     if message.topic not in [
         MsOrderManagement.CreateOrder.value,
-        MsEvDriverManagement.DriverVerification.value,
-        MsPaymentManagement.AuthorizePayment.value,
+        MsEvDriverManagement.DriverVerificationResponse.value,
+        MsPaymentManagement.AuthorizePaymentResponse.value,
         MsOrderManagement.RejectOrder.value,
     ]:
         logger.info("Action Not Implemented")
         validate["error_description"]["action"] = "Action Not Implemented"
-        validate["status"] = 404
+        validate["status_code"] = 404
     
-    request_id = message.payload.get("meta").get("request_id")
-    logger.info(f"request_id: {request_id}")
-    if request_id is None:
-        validate["error_description"]["request_id"] = "request_id is required"
-        validate["status"] = 400
-    
-    trigger_method = message.payload.get("data").get("trigger_method")
-    logger.info(f"trigger_method: {trigger_method}")
-    if trigger_method is None:
-        validate["error_description"]["trigger_method"] = "trigger_method is required"
-        validate["status"] = 400
-    
-    payment_required = message.payload.get("data").get("payment_required")
-    logger.info(f"payment_required: {payment_required}")
-    if payment_required is None:
-        message.payload["data"]["payment_required"] = False
+    #transaction_id = message.payload.get("data").get("transaction_id")
+    #logger.info(f"transaction_id: {transaction_id}")
+    #if transaction_id is None:
+    #    validate["error_description"]["transaction_id"] = "transaction_id is required"
+    #    validate["status"] = 400
+    #
+    #request_id = message.payload.get("meta").get("request_id")
+    #logger.info(f"request_id: {request_id}")
+    #if request_id is None:
+    #    validate["error_description"]["request_id"] = "request_id is required"
+    #    validate["status"] = 400
+    #
+    #trigger_method = message.payload.get("data").get("trigger_method")
+    #logger.info(f"trigger_method: {trigger_method}")
+    #if trigger_method is None:
+    #    validate["error_description"]["trigger_method"] = "trigger_method is required"
+    #    validate["status"] = 400
+    #
+    #payment_required = message.payload.get("data").get("payment_required")
+    #logger.info(f"payment_required: {payment_required}")
+    #if payment_required is None:
+    #    message.payload["data"]["payment_required"] = False
 
     id_tag = message.payload.get("data").get("id_tag")
     logger.info(f"id_tag: {id_tag}")
@@ -84,8 +87,7 @@ def validate_request(message: KafkaMessage):
     logger.info(f"mobile_id: {mobile_id}")
 
     if id_tag is None and mobile_id is None:
-        validate["error_description"]["id_tag"] = "id_tag or mobile_id is required"
-        validate["error_description"]["mobile_id"] = "id_tag or mobile_id is required"
+        validate["error_description"]["id_tag"] = "rfid or mobile_id is required"
         validate["status"] = 400
 
     logger.info(f"validate: {validate}")
@@ -109,15 +111,3 @@ def kafka_out(topic: str, data: dict, request_id: str):
         ),
         request_id=request_id
     )
-
-
-def kafka_out_wait_response(topic, data,return_topic):
-    from kafka_app.main import kafka_app
-    response = kafka_app.send(
-        topic=Topic(
-            name=topic,
-            data=data,
-            return_topic=return_topic,
-        ),
-    )
-    return response.payload

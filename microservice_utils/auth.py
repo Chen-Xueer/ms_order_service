@@ -6,7 +6,7 @@ from typing import Callable
 
 
 def authorization_wrap(token_callback: Callable[[Request, str], None]):
-
+    
     def token_required(f):
         @wraps(f)
         def decorated(*args, **kwargs):

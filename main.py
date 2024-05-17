@@ -11,7 +11,7 @@ if __name__ == "__main__":
     logger.info("Starting kafka connection")
     from kafka_app import app_init
 
-    #threading.Thread(target=app_init).start()
+    threading.Thread(target=app_init).start()
 
     logger.info("Starting Flask server")
     from flask_app.main import app
