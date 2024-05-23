@@ -15,13 +15,12 @@ ns_kafka = Namespace("orderservice", "APIs related to mimic kafka")
 request_model = RequestModel(ns_kafka)
 response_model = ResponseModel(ns_kafka)
 
-
 # PATH: /orderservice/mobile/order
-@ns_mobile.route("orderservice/mobile/order/<string:mobile_id>")
-class order(Resource):
+@ns_kafka.route("orderservice/kafka/remote_start/<string:mobile_id>")
+class remote_start(Resource):
     #@ns_mobile.doc(security="Authorization")
     #@token_required
-    @ns_mobile.expect(request_model.create_order(), validate=True)
+    @ns_mobile.expect(request_model.create_order_mobile(), validate=True)
     @ns_mobile.marshal_with(response_model.create_order(), skip_none=True)
     def post(self,mobile_id):
         #token = str(request.headers["Authorization"])
@@ -35,13 +34,12 @@ class order(Resource):
         create_order.create_order_mobile_id(mobile_id=mobile_id,data=data,tenant_id=tenant_id)
 
 
-
 # PATH: /orderservice/mobile/order
-@ns_kafka.route("orderservice/kafka/order")
+@ns_kafka.route("orderservice/kafka/authorize")
 class order(Resource):
     #@ns_mobile.doc(security="Authorization")
     #@token_required
-    @ns_mobile.expect(request_model.create_order(), validate=True)
+    @ns_mobile.expect(request_model.create_order_rfid(), validate=True)
     @ns_mobile.marshal_with(response_model.create_order(), skip_none=True)
     def post(self):
         #token = str(request.headers["Authorization"])
@@ -54,3 +52,21 @@ class order(Resource):
         create_order = CreateOrder()
         create_order.create_order_rfid(data=data)
 
+
+# PATH: /orderservice/mobile/order
+@ns_kafka.route("orderservice/kafka/make_reservation")
+class make_reservation(Resource):
+    #@ns_mobile.doc(security="Authorization")
+    #@token_required
+    @ns_mobile.expect(request_model.create_order_rfid(), validate=True)
+    @ns_mobile.marshal_with(response_model.create_order(), skip_none=True)
+    def post(self):
+        #token = str(request.headers["Authorization"])
+        #claims = decode_token(token)
+        tenant_id = 'tenant_idA'
+
+        data = request.json
+        logger.info(f"Request data: {data}")
+
+        create_order = CreateOrder()
+        create_order.create_order_rfid(data=data)

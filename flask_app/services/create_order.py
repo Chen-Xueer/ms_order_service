@@ -80,26 +80,21 @@ class CreateOrder:
 
             data["meta"].update(
                 {
-                    "service_name":"ms_order_service",
                     "timestamp":datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "version":"1.0.0",
-                    "type": "order_creation"
+                    "type": "order_creation",
+                    "action": "RemoteStartTransaction"
                 }
             )
         
             charge_point_id = data.get("data").get("charge_point_id")
             connector_id = data.get("data").get("connector_id")
-            trigger_method = data.get("data").get("trigger_method")
-            request_id = str(uuid.uuid4())
-            requires_payment = data.get("data").get("requires_payment")
-            start_time = data.get("data").get("start_time")
             
-
             order_created = self.db_insert_order(
                 charge_point_id=charge_point_id,
                 connector_id=connector_id,
                 id_tag=mobile_id,
-                trigger_method=trigger_method,
+                trigger_method='remote_start',
                 tenant_id=tenant_id
             )
 
@@ -108,7 +103,7 @@ class CreateOrder:
             if not isinstance(order_created,Order):
                 return order_created
             
-            trans_det = f"Order created for {trigger_method}"
+            trans_det = "Order created for remote_start"
             
             transaction_created = self.db_insert_transaction(transaction_id=order_created.transaction_id,trans_det=trans_det)
             if not isinstance(transaction_created,Transaction):
@@ -125,8 +120,8 @@ class CreateOrder:
                         "charge_point_id": charge_point_id,
                         "connector_id": connector_id,
                         "id_tag": mobile_id,
-                        "trigger_method": trigger_method,
-                        "start_time": start_time,
+                        "trigger_method": 'remote_start',
+                        "start_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "is_reservation": False,
                         "is_charging": False,
                         "tenant_id": tenant_id,
@@ -134,7 +129,6 @@ class CreateOrder:
                         "status_code": 201,
                     }
                 )
-
                 kafka_send(topic=MsEvDriverManagement.DriverVerificationRequest.value,data=data,request_id=request_id)
 
         except Exception as e:
@@ -147,7 +141,6 @@ class CreateOrder:
     def create_order_rfid(self,data):
         data["meta"].update(
             {
-                "service_name":"ms_order_service",
                 "timestamp":datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "version":"1.0.0",
                 "type": "order_creation"

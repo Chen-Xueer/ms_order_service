@@ -29,28 +29,17 @@ class UpdateOrder:
         finally:
             self.session.close()          
     
-    def update_order(self,data):
+    def update_order(self,data,cancel_ind):
         try:
             logger.info(f"#############################################")
             logger.info(f"Updating order: {data}")
-
-            data["meta"].update(
-                {
-                    "service_name":ProducerTypes.ORDER_SERVICE.value,
-                    "timestamp":datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "version":"1.0.0",
-                    "type": "order_update"
-                }
-            )
             
-            service_name = data.get("meta").get("service_name")
+            producer = data.get("meta").get("producer")
             request_id=data.get("meta").get("request_id")
             transaction_id = data.get("data").get("transaction_id")
             charge_point_id = data.get("data").get("charge_point_id")
             connector_id = data.get("data").get("connector_id")
             id_tag = data.get("data").get("id_tag")
-            mobile_id = data.get("data").get("mobile_id")
-            rfid = data.get("data").get("rfid")
             is_charging = data.get("data").get("is_charging")
             is_reservation = data.get("data").get("is_reservation")
             requires_payment = data.get("data").get("requires_payment")
@@ -74,29 +63,35 @@ class UpdateOrder:
                 reservation_ind = None
                 order_status = None
 
+                logger.info(f"Order status: {order_exist.status}")
+
                 if status_code in (200,201):
-                    if( trigger_method in (TriggerMethod.REMOTE_START.value,TriggerMethod.MAKE_RESERVATION.value,TriggerMethod.AUTHORIZE.value,TriggerMethod.START_TRANSACTION.value) and order_exist.status == OrderStatus.CREATED.value):
-                        order_status = OrderStatus.AUTHORIZED.value
-                    elif (
-                        trigger_method == TriggerMethod.START_TRANSACTION.value and order_exist.status in (OrderStatus.RESERVING.value,OrderStatus.AUTHORIZED.value)
+                    if (
+                        trigger_method == TriggerMethod.START_TRANSACTION.value and order_exist.status in (OrderStatus.RESERVING.value,OrderStatus.AUTHORIZED.value,OrderStatus.CREATED.value)
                     ):
                         order_status = OrderStatus.CHARGING.value
                         charging_ind=True
-                    elif trigger_method == TriggerMethod.MAKE_RESERVATION.value and order_exist.status == OrderStatus.AUTHORIZED.value:
+                    elif trigger_method == TriggerMethod.MAKE_RESERVATION.value and order_exist.status in (OrderStatus.AUTHORIZED.value,OrderStatus.CREATED.value):
                         order_status = OrderStatus.RESERVING.value
                         reservation_ind=True
+                    elif(trigger_method in (TriggerMethod.REMOTE_START.value,TriggerMethod.MAKE_RESERVATION.value,TriggerMethod.AUTHORIZE.value,TriggerMethod.START_TRANSACTION.value) and order_exist.status == OrderStatus.CREATED.value):
+                        order_status = OrderStatus.AUTHORIZED.value
                 else:
-                    if trigger_method in (TriggerMethod.START_TRANSACTION.value):
-                        order_status = OrderStatus.CANCELLED.value
-                        charging_ind = False
-                    elif (trigger_method in (TriggerMethod.REMOTE_START.value,TriggerMethod.MAKE_RESERVATION.value,TriggerMethod.AUTHORIZE.value) and order_exist.status == OrderStatus.CREATED.value):
+                    if order_exist.status == OrderStatus.CREATED.value:
                         order_status = OrderStatus.AUTHORIZEDFAILED.value
                         if trigger_method == TriggerMethod.MAKE_RESERVATION.value:
                             reservation_ind = False
-                        elif trigger_method == TriggerMethod.REMOTE_START.value:
+                        elif trigger_method in (TriggerMethod.REMOTE_START.value,TriggerMethod.START_TRANSACTION.value):
                             charging_ind = False
+                
+                if cancel_ind == True:
+                    order_status = OrderStatus.CANCELLED.value
+                    charging_ind = False
+                    reservation_ind = False
 
                 logger.info(f"Order status: {order_status}")
+                logger.info(f"Charging ind: {charging_ind}")
+                logger.info(f"Reservation ind: {reservation_ind}")
 
                 self.session.query(Order).filter(Order.transaction_id==order_exist.transaction_id).update({
                     "charge_point_id": charge_point_id,
@@ -121,41 +116,77 @@ class UpdateOrder:
                     {
                         "is_reservation":charging_ind,
                         "is_charging":reservation_ind,
-                        "id_tag_status": order_status,
                     }
                 )
 
-                logger.info(f"service_name: {service_name}")
+                logger.info(f"producer: {producer}")
+                logger.info(f"trigger_method: {trigger_method}")
+                logger.info(f"order_status: {order_status}")
+                logger.info(f"data: {data}")
 
-                if trigger_method in (TriggerMethod.AUTHORIZE.value):
-                    if service_name == ProducerTypes.EVSE_AS_SERVICE.value:
-                        kafka_out(topic=MsEVSEManagement.AuthorizeResponse.value,data=data,request_id=request_id)
-                    if service_name == ProducerTypes.OCPP_AS_SERVICE.value:
-                        kafka_out(topic=MsCSMSManagement.AuthorizeResponse.value,data=data,request_id=request_id)
-                    
-                    if order_status == OrderStatus.AUTHORIZEDFAILED.value:
-                        if requires_payment == True:
-                            kafka_out(topic=MsPaymentManagement.CancelPaymentRequest.value,data=data,request_id=request_id)
+                kafka_topic = None
 
-                    elif trigger_method == TriggerMethod.MAKE_RESERVATION.value:
-                        kafka_out(topic=MsEVSEManagement.MakeReservation.value,data=data,request_id=request_id)
-                    elif trigger_method in (TriggerMethod.START_TRANSACTION.value,TriggerMethod.REMOTE_START.value):
-                        kafka_out(topic=MsEvDriverManagement.DriverVerificationResponse.value,data=data,request_id=request_id)
-                #elif order_status in OrderStatus.CHARGING.value:
-                #    if service_name == ProducerTypes.EVSE_AS_SERVICE.value:
-                #        kafka_send(topic=MsEVSEManagement.StartTransaction.value,data=data,request_id=request_id)
-                #    if service_name == ProducerTypes.OCPP_AS_SERVICE.value:
-                #        kafka_send(topic=MsCSMSManagement.StartTransaction.value,data=data,request_id=request_id)
-                #    kafka_send(topic=MsEvDriverManagement.UpdateDriverStatus.value,data=data,request_id=request_id)
-                #elif order_status == OrderStatus.RESERVING.value:
-                #    if service_name == ProducerTypes.EVSE_AS_SERVICE.value:
-                #        kafka_send(topic=MsEVSEManagement.MakeReservation.value,data=data,request_id=request_id)
-                #    if service_name == ProducerTypes.OCPP_AS_SERVICE.value:
-                #        kafka_send(topic=MsCSMSManagement.MakeReservation.value,data=data,request_id=request_id)
-                #    kafka_send(topic=MsEvDriverManagement.UpdateDriverStatus.value,data=data,request_id=request_id)
-                #elif order_status == OrderStatus.CANCELLED.value:
-                #    if requires_payment == True:
-                #        kafka_send(topic=MsPaymentManagement.CancelPaymentRequest.value,data=data,request_id=request_id)
+                data["meta"].update(
+                    {
+                        "producer":ProducerTypes.ORDER_SERVICE.value,
+                        "timestamp":datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "version":"1.0.0",
+                    }
+                )
+
+                if trigger_method == TriggerMethod.AUTHORIZE.value:
+                    if order_status in (OrderStatus.AUTHORIZED.value,OrderStatus.AUTHORIZEDFAILED.value):
+                        if producer == ProducerTypes.EVSE_AS_SERVICE.value:
+                            kafka_topic = MsEVSEManagement.AuthorizeResponse.value
+                        if producer == ProducerTypes.OCPP_AS_SERVICE.value:
+                            kafka_topic = MsCSMSManagement.AuthorizeResponse.value
+                if trigger_method == TriggerMethod.REMOTE_START.value:
+                        data["data"] = {
+                                    "connector_id": connector_id,
+                                    "id_tag": id_tag,
+                        }
+                        if producer == ProducerTypes.EVSE_AS_SERVICE.value:
+                            kafka_topic = MsEVSEManagement.RemoteControlResponse.value
+                        if producer == ProducerTypes.OCPP_AS_SERVICE.value:
+                            kafka_topic = MsCSMSManagement.ReservationRequest.value
+                elif trigger_method == TriggerMethod.MAKE_RESERVATION.value:
+                        if producer == ProducerTypes.EVSE_AS_SERVICE.value:
+                            kafka_topic = MsEVSEManagement.ReservationResponse.value
+                        if producer == ProducerTypes.OCPP_AS_SERVICE.value:
+                            if reservation_ind == True:
+                                data["data"] = {
+                                    "reservation_id": transaction_id,
+                                    "connector_id": connector_id,
+                                    "expiry_date": data.get("data").get("expiry_date"),
+                                    "id_tag": id_tag,
+                                }
+
+                                kafka_topic = MsCSMSManagement.ReservationResponse.value
+                elif trigger_method == TriggerMethod.START_TRANSACTION.value:
+                        if producer == ProducerTypes.EVSE_AS_SERVICE.value:
+                            kafka_topic = MsEVSEManagement.RemoteControlResponse.value
+                        if producer == ProducerTypes.OCPP_AS_SERVICE.value:
+                            if 'error_description' in data["data"]:
+                                id_tag_status = data.get("data").get("error_description").get("id_tag_status")
+                            else: 
+                                id_tag_status = data.get("data").get("id_tag_status")
+                            data["data"] = {
+                                "transaction_id": transaction_id,
+                                "id_tag_info": {
+                                    "status": id_tag_status,
+                                    "parent_id_tag": data.get("data").get("id_tag"),
+                                    "expiry_date": data.get("data").get("expiry_date")
+                                }
+                            }
+                            kafka_topic = MsCSMSManagement.RemoteControlResponse.value
+                elif order_status == OrderStatus.CANCELLED.value:
+                    if requires_payment == True:
+                        kafka_topic = MsPaymentManagement.CancelPaymentRequest.value
+                
+                logger.info(f"Kafka topic: {kafka_topic}")
+
+                if kafka_topic is not None:
+                    kafka_out(topic= kafka_topic,data=data,request_id=request_id)
         except Exception as e:
             logger.error(f"(X) Error while updating order: {e}")
             self.session.rollback()

@@ -34,8 +34,13 @@ def handler(message: KafkaMessage):
             MsEvDriverManagement.DriverVerificationResponse.value,
             MsOrderManagement.RejectOrder.value
         ):
+            if message.topic == MsOrderManagement.RejectOrder.value:
+                cancel_ind = True
+            else:
+                cancel_ind = False
+
             update_order = UpdateOrder()   
-            update_order.update_order(data = data)   
+            update_order.update_order(data = data,cancel_ind = cancel_ind)   
             
     except Exception as e:
         session.rollback()
