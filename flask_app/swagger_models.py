@@ -83,7 +83,6 @@ class RequestModel:
         })
 
         data_model=self.namespace.model('data_create_order_rfid',{
-            "charge_point_id": fields.String(description="charge_point_id", required=False,default="cp-1"),
             "connector_id": fields.Integer(description="connector_id", required=False,default=1),
             "id_tag": fields.String(description="id_tag", required=False,default="MUserA"),
             "meter_start": fields.Integer(description="meter_start", required=False,default=1000),

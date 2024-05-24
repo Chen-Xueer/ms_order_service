@@ -21,6 +21,7 @@ class Order(Base):
     requires_payment: Mapped[bool] = mapped_column(Boolean, nullable=True)
     create_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     last_update: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    request_id: Mapped[str] = mapped_column(String(255), nullable=True)
 
     def __repr__(self):
         return "<Order {}>".format(self.transaction_id)

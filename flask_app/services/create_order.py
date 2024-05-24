@@ -22,6 +22,7 @@ class CreateOrder:
             connector_id = kwargs.get("connector_id")
             ev_driver_id = kwargs.get("id_tag")
             trigger_method = kwargs.get("trigger_method")
+            request_id = kwargs.get("request_id")
             
             
             if 'start_charging' in trigger_method:
@@ -45,7 +46,8 @@ class CreateOrder:
                             is_reservation=reservation_ind,
                             requires_payment=False,
                             create_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            last_update=None
+                            last_update=None,
+                            request_id=request_id,
                         )
             self.session.add(order_created)
             self.session.commit()
@@ -95,7 +97,8 @@ class CreateOrder:
                 connector_id=connector_id,
                 id_tag=mobile_id,
                 trigger_method='remote_start',
-                tenant_id=tenant_id
+                tenant_id=tenant_id,
+                request_id = request_id
             )
 
             logger.info(f"Order created: {order_created}")
@@ -165,6 +168,7 @@ class CreateOrder:
                 id_tag=id_tag,
                 trigger_method=trigger_method,
                 tenant_id=tenant_id,
+                request_id = request_id
             )
             
             if not isinstance(order_created,Order):
@@ -185,7 +189,6 @@ class CreateOrder:
                 data["data"].update(
                     {
                         "transaction_id": order_created.transaction_id,
-                        "charge_point_id": charge_point_id,
                         "connector_id": connector_id,
                         "id_tag": id_tag,
                         "trigger_method": trigger_method,

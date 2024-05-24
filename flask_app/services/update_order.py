@@ -9,7 +9,7 @@ from sqlalchemy_.ms_order_service.enum_types import OrderStatus, ReturnActionSta
 from sqlalchemy_.ms_order_service.order import Order
 from sqlalchemy_.ms_order_service.transaction import Transaction
 from typing import Tuple
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class UpdateOrder:
     def __init__(self):
@@ -17,15 +17,22 @@ class UpdateOrder:
         self.session = self.database.init_session()
         self.data_validation = DataValidation()
     
-    def validate_data(self,transaction_id) -> bool:
+    def validate_data(self,transaction_id,request_id) -> bool:
         try:
-            order_exist = self.session.query(Order).filter(Order.transaction_id == transaction_id).first()
-            if not order_exist:
-                return False
+            order_exist = self.session.query(
+                                            Order
+                                        ).filter(
+                                            Order.transaction_id == transaction_id,
+                                            Order.status.in_([OrderStatus.RESERVING.value,OrderStatus.AUTHORIZED.value,OrderStatus.CREATED.value])
+                                        ).first()
+            if order_exist is None:
+                order_exist = self.session.query(Order).filter(Order.request_id == request_id).first()
+                if not order_exist:
+                    return None
             return order_exist
         except Exception as e:
             logger.error(e)
-            return False,str(e)
+            return None,str(e)
         finally:
             self.session.close()          
     
@@ -47,17 +54,18 @@ class UpdateOrder:
             trigger_method = data.get("data").get("trigger_method")
             status_code = data.get("data").get("status_code")
 
-            order_exist = self.validate_data(transaction_id)
+            order_exist = self.validate_data(transaction_id=transaction_id,request_id=request_id)
 
-            logger.info(f"Order exist: {order_exist}")
-
-            if not isinstance(order_exist,Order):
+            if not isinstance(order_exist,Order) and trigger_method == TriggerMethod.START_TRANSACTION.value:
                 create_order = CreateOrder()
                 order_exist = create_order.create_order_rfid(data = data)
                 return
 
             if isinstance(order_exist,Order):
                 old_status = order_exist.status
+
+                transaction_exists = self.session.query(Transaction).filter(Transaction.transaction_id == order_exist.transaction_id).first()
+                logger.info(f"transaction_exists exist: {transaction_exists}")
 
                 charging_ind = None
                 reservation_ind = None
@@ -93,24 +101,23 @@ class UpdateOrder:
                 logger.info(f"Charging ind: {charging_ind}")
                 logger.info(f"Reservation ind: {reservation_ind}")
 
-                self.session.query(Order).filter(Order.transaction_id==order_exist.transaction_id).update({
-                    "charge_point_id": charge_point_id,
-                    "connector_id": connector_id,
-                    "ev_driver_id": id_tag,
-                    "is_charging": is_charging,
-                    "is_reservation": is_reservation,
-                    "requires_payment": requires_payment,
-                    "tenant_id": tenant_id,
-                    "status": order_status,
-                    "last_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                })
+                self.session.query(Order).filter(Order.transaction_id==order_exist.transaction_id).update(
+                    {
+                        "charge_point_id": charge_point_id,
+                        "connector_id": connector_id,
+                        "ev_driver_id": id_tag,
+                        "is_charging": is_charging,
+                        "is_reservation": is_reservation,
+                        "requires_payment": requires_payment,
+                        "tenant_id": tenant_id,
+                        "status": order_status,
+                        "last_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    }
+                )
 
-                order_exist = self.session.query(Order).filter(Order.transaction_id == order_exist.transaction_id).first()
-
-                self.session.query(Transaction).filter(Transaction.transaction_id == transaction_id).update({
-                    "transaction_detail": f"{trigger_method} Initated. Order status updated from {old_status} to {order_exist.status}",
-                })
-                self.session.commit()
+                if transaction_exists:
+                    transaction_exists.transaction_detail = transaction_exists.transaction_detail+f"{trigger_method} Initated. Order status updated from {old_status} to {order_exist.status}"
+                    self.session.commit()
 
                 data["data"].update(
                     {
@@ -141,44 +148,47 @@ class UpdateOrder:
                         if producer == ProducerTypes.OCPP_AS_SERVICE.value:
                             kafka_topic = MsCSMSManagement.AuthorizeResponse.value
                 if trigger_method == TriggerMethod.REMOTE_START.value:
-                        data["data"] = {
-                                    "connector_id": connector_id,
-                                    "id_tag": id_tag,
-                        }
-                        if producer == ProducerTypes.EVSE_AS_SERVICE.value:
-                            kafka_topic = MsEVSEManagement.RemoteControlResponse.value
-                        if producer == ProducerTypes.OCPP_AS_SERVICE.value:
-                            kafka_topic = MsCSMSManagement.ReservationRequest.value
-                elif trigger_method == TriggerMethod.MAKE_RESERVATION.value:
-                        if producer == ProducerTypes.EVSE_AS_SERVICE.value:
-                            kafka_topic = MsEVSEManagement.ReservationResponse.value
-                        if producer == ProducerTypes.OCPP_AS_SERVICE.value:
-                            if reservation_ind == True:
-                                data["data"] = {
-                                    "reservation_id": transaction_id,
-                                    "connector_id": connector_id,
-                                    "expiry_date": data.get("data").get("expiry_date"),
-                                    "id_tag": id_tag,
-                                }
+                    data["data"] = {
+                                "connector_id": connector_id,
+                                "id_tag": id_tag,
+                    }
+                    if producer == ProducerTypes.EVSE_AS_SERVICE.value:
+                        kafka_topic = MsEVSEManagement.RemoteControlResponse.value
+                    if producer == ProducerTypes.OCPP_AS_SERVICE.value:
+                        kafka_topic = MsCSMSManagement.ReservationRequest.value
+                elif trigger_method == TriggerMethod.MAKE_RESERVATION.value and order_status == OrderStatus.RESERVING.value:
+                    if producer == ProducerTypes.EVSE_AS_SERVICE.value:
+                        kafka_topic = MsEVSEManagement.ReservationRequest.value
+                    if producer == ProducerTypes.OCPP_AS_SERVICE.value:
+                        expiry_dt = data.get("data").get("expiry_date")
 
-                                kafka_topic = MsCSMSManagement.ReservationResponse.value
-                elif trigger_method == TriggerMethod.START_TRANSACTION.value:
-                        if producer == ProducerTypes.EVSE_AS_SERVICE.value:
-                            kafka_topic = MsEVSEManagement.RemoteControlResponse.value
-                        if producer == ProducerTypes.OCPP_AS_SERVICE.value:
-                            if 'error_description' in data["data"]:
-                                id_tag_status = data.get("data").get("error_description").get("id_tag_status")
-                            else: 
-                                id_tag_status = data.get("data").get("id_tag_status")
+                        if reservation_ind == True:
                             data["data"] = {
-                                "transaction_id": transaction_id,
-                                "id_tag_info": {
-                                    "status": id_tag_status,
-                                    "parent_id_tag": data.get("data").get("id_tag"),
-                                    "expiry_date": data.get("data").get("expiry_date")
-                                }
+                                "reservation_id": order_exist.transaction_id,
+                                "connector_id": order_exist.connector_id,
+                                "expiry_date": "2023-08-01T06:29:00Z",
+                                #"expiry_date": expiry_dt.isoformat()+ "Z" if expiry_dt else  (datetime.now() + timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S"),
+                                "id_tag": id_tag,
                             }
-                            kafka_topic = MsCSMSManagement.RemoteControlResponse.value
+
+                            kafka_topic = MsCSMSManagement.ReservationRequest.value
+                elif trigger_method == TriggerMethod.START_TRANSACTION.value:
+                    if producer == ProducerTypes.EVSE_AS_SERVICE.value:
+                        kafka_topic = MsEVSEManagement.RemoteControlResponse.value
+                    if producer == ProducerTypes.OCPP_AS_SERVICE.value:
+                        if 'error_description' in data["data"]:
+                            id_tag_status = data.get("data").get("error_description").get("id_tag_status")
+                        else: 
+                            id_tag_status = data.get("data").get("id_tag_status")
+                        data["data"] = {
+                            "transaction_id": order_exist.transaction_id,
+                            "id_tag_info": {
+                                "status": id_tag_status,
+                                "parent_id_tag": data.get("data").get("id_tag"),
+                                "expiry_date": data.get("data").get("expiry_date")
+                            }
+                        }
+                        kafka_topic = MsCSMSManagement.RemoteControlResponse.value
                 elif order_status == OrderStatus.CANCELLED.value:
                     if requires_payment == True:
                         kafka_topic = MsPaymentManagement.CancelPaymentRequest.value
