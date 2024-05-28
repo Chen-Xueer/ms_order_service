@@ -11,9 +11,11 @@ class Transaction(Base):
     transaction_id: Mapped[int] = mapped_column(Integer, ForeignKey('order.transaction_id'), primary_key=True)
     amount: Mapped[DECIMAL] = mapped_column(DECIMAL(precision=10, scale=3), nullable=True)
     charged_energy: Mapped[DECIMAL] = mapped_column(DECIMAL(precision=10, scale=4), nullable=True)
+    start_time: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    end_time: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     duration: Mapped[int] = mapped_column(Integer, nullable=True)
     paid_by: Mapped[str] = mapped_column(String(50), nullable=True)
-    transaction_detail: Mapped[str] = mapped_column(String(500), nullable=True)
+    transaction_detail: Mapped[str] = mapped_column(String(3000), nullable=True)
 
     def __repr__(self):
         return "<Transaction {}>".format(self.transaction_id)

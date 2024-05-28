@@ -37,3 +37,5 @@ class TriggerMethod(enum.Enum):
     START_TRANSACTION = 'start_transaction'
     REMOTE_START = 'remote_start'
     MAKE_RESERVATION = 'make_reservation'
+    STOP_TRANSACTION = 'stop_transaction'
+    CANCEL_ORDER = 'cancel_order'

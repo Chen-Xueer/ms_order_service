@@ -23,7 +23,7 @@ class CreateOrder:
             ev_driver_id = kwargs.get("id_tag")
             trigger_method = kwargs.get("trigger_method")
             request_id = kwargs.get("request_id")
-            
+            requires_payment = kwargs.get("requires_payment")
             
             if 'start_charging' in trigger_method:
                 charging_ind=True
@@ -44,7 +44,7 @@ class CreateOrder:
                             tariff_id=None,
                             is_charging=charging_ind,
                             is_reservation=reservation_ind,
-                            requires_payment=False,
+                            requires_payment=requires_payment,
                             create_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                             last_update=None,
                             request_id=request_id,
@@ -79,6 +79,10 @@ class CreateOrder:
     def create_order_mobile_id(self,mobile_id,data,tenant_id):
         try:
             request_id = data.get("meta").get("request_id")
+            requires_payment = data.get("data").get("requires_payment")
+            charge_point_id = data.get("data").get("charge_point_id")
+            connector_id = data.get("data").get("connector_id")
+            trigger_method = data.get("data").get("trigger_method")
 
             data["meta"].update(
                 {
@@ -88,15 +92,12 @@ class CreateOrder:
                     "action": "RemoteStartTransaction"
                 }
             )
-        
-            charge_point_id = data.get("data").get("charge_point_id")
-            connector_id = data.get("data").get("connector_id")
             
             order_created = self.db_insert_order(
                 charge_point_id=charge_point_id,
                 connector_id=connector_id,
                 id_tag=mobile_id,
-                trigger_method='remote_start',
+                trigger_method=trigger_method,
                 tenant_id=tenant_id,
                 request_id = request_id
             )
@@ -106,7 +107,7 @@ class CreateOrder:
             if not isinstance(order_created,Order):
                 return order_created
             
-            trans_det = "Order created for remote_start"
+            trans_det = "Order created for remote_start."
             
             transaction_created = self.db_insert_transaction(transaction_id=order_created.transaction_id,trans_det=trans_det)
             if not isinstance(transaction_created,Transaction):
@@ -123,12 +124,12 @@ class CreateOrder:
                         "charge_point_id": charge_point_id,
                         "connector_id": connector_id,
                         "id_tag": mobile_id,
-                        "trigger_method": 'remote_start',
+                        "trigger_method": trigger_method,
                         "start_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "is_reservation": False,
                         "is_charging": False,
                         "tenant_id": tenant_id,
-                        "requires_payment": False,
+                        "requires_payment": requires_payment,
                         "status_code": 201,
                     }
                 )
@@ -174,7 +175,7 @@ class CreateOrder:
             if not isinstance(order_created,Order):
                 return order_created
 
-            trans_det = f"Order created for {trigger_method}"
+            trans_det = f"Order created for {trigger_method}."
             
             transaction_created = self.db_insert_transaction(transaction_id=order_created.transaction_id,trans_det=trans_det)
             if not isinstance(transaction_created,Transaction):
@@ -196,7 +197,7 @@ class CreateOrder:
                         "is_reservation": False,
                         "is_charging": False,
                         "tenant_id": tenant_id,
-                        "requires_payment": False,
+                        "requires_payment": requires_payment,
                         "status_code": 201,
                     }
                 )

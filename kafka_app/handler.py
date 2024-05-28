@@ -30,20 +30,20 @@ def handler(message: KafkaMessage):
         if message.topic == MsOrderManagement.CreateOrder.value:
             create_order = CreateOrder()
             non_blocking(create_order.create_order_rfid(data = data))
+        
+        if message.topic == MsOrderManagement.RejectOrder.value:
+            update_order = UpdateOrder()   
+            update_order.update_order(data = data,cancel_ind = True)
             
         if message.topic in (
             MsEvDriverManagement.DriverVerificationResponse.value,
-            MsOrderManagement.RejectOrder.value,
             MsCSMSManagement.ReservationResponse.value,
             MsPaymentManagement.AuthorizePaymentResponse.value,
+            MsPaymentManagement.CancelPaymentResponse.value,
+            MsCSMSManagement.StopTransaction.value
         ):
-            if message.topic == MsOrderManagement.RejectOrder.value:
-                cancel_ind = True
-            else:
-                cancel_ind = False
-
             update_order = UpdateOrder()   
-            update_order.update_order(data = data,cancel_ind = cancel_ind)   
+            update_order.update_order(data = data,cancel_ind = None)   
         
         #if message.topic in [MsEvDriverManagement.DriverVerificationResponse.value,]:
         #    from kafka_app.main import kafka_app

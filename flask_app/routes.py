@@ -3,6 +3,7 @@ from flask import request
 from flask_restx import Namespace, Resource
 from flask_app.swagger_models import RequestModel,ResponseModel
 from flask_app.services.create_order import CreateOrder
+from flask_app.services.list_order import ListOrder
 from flask_app.auth import token_required,decode_token
 from microservice_utils.settings import logger
 import uuid
@@ -11,12 +12,12 @@ ns_mobile = Namespace("orderservice", "APIs related to mobile")
 request_model = RequestModel(ns_mobile)
 response_model = ResponseModel(ns_mobile)
 
-ns_kafka = Namespace("orderservice", "APIs related to mimic kafka")
+ns_kafka = Namespace("mimic_kafka", "APIs related to mimic kafka")
 request_model = RequestModel(ns_kafka)
 response_model = ResponseModel(ns_kafka)
 
 # PATH: /orderservice/mobile/order
-@ns_kafka.route("orderservice/kafka/remote_start/<string:mobile_id>")
+@ns_mobile.route("orderservice/mobile/remote_start/<string:mobile_id>")
 class remote_start(Resource):
     #@ns_mobile.doc(security="Authorization")
     #@token_required
@@ -33,15 +34,14 @@ class remote_start(Resource):
         create_order = CreateOrder()
         create_order.create_order_mobile_id(mobile_id=mobile_id,data=data,tenant_id=tenant_id)
 
-
 # PATH: /orderservice/mobile/order
-@ns_kafka.route("orderservice/kafka/authorize")
-class order(Resource):
+@ns_mobile.route("orderservice/mobile/make_reservation/<string:mobile_id>")
+class make_reservation(Resource):
     #@ns_mobile.doc(security="Authorization")
     #@token_required
-    @ns_mobile.expect(request_model.create_order_rfid(), validate=True)
+    @ns_mobile.expect(request_model.create_order_rfid_reservation(), validate=True)
     @ns_mobile.marshal_with(response_model.create_order(), skip_none=True)
-    def post(self):
+    def post(self,mobile_id):
         #token = str(request.headers["Authorization"])
         #claims = decode_token(token)
         tenant_id = 'tenant_idA'
@@ -50,16 +50,29 @@ class order(Resource):
         logger.info(f"Request data: {data}")
 
         create_order = CreateOrder()
-        create_order.create_order_rfid(data=data)
-
+        create_order.create_order_mobile_id(mobile_id=mobile_id,data=data,tenant_id=tenant_id)
 
 # PATH: /orderservice/mobile/order
-@ns_kafka.route("orderservice/kafka/make_reservation")
-class make_reservation(Resource):
+@ns_mobile.route("orderservice/mobile/order/<string:transaction_id>")
+class order(Resource):
     #@ns_mobile.doc(security="Authorization")
     #@token_required
-    @ns_mobile.expect(request_model.create_order_rfid(), validate=True)
     @ns_mobile.marshal_with(response_model.create_order(), skip_none=True)
+    def get(self,transaction_id):
+        #token = str(request.headers["Authorization"])
+        #claims = decode_token(token)
+        tenant_id = 'tenant_idA'
+
+        list_order = ListOrder()
+        return list_order.list_order(transaction_id=transaction_id,tenant_id=tenant_id)
+
+# PATH: /orderservice/mobile/order
+@ns_kafka.route("orderservice/kafka/authorize")
+class authorize(Resource):
+    #@ns_mobile.doc(security="Authorization")
+    #@token_required
+    @ns_kafka.expect(request_model.create_order_rfid_authorize(), validate=True)
+    @ns_kafka.marshal_with(response_model.create_order(), skip_none=True)
     def post(self):
         #token = str(request.headers["Authorization"])
         #claims = decode_token(token)

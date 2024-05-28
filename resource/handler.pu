@@ -18,16 +18,16 @@ EVDriverService -> EVDriverService : verify driver
 EVDriverService -> OrderService : [Kafka] MsEvDriverManagement.DriverVerificationResponse
 group #IndianRed DRIVER VERIFICATION FAILED
     group #LightBlue MobileUser
-        OrderService -> EVSEMgmt: [Kafka] EVSEMgmt.CancelTransaction
+        OrderService -> EVSEMgmt: [Kafka] EVSEMgmt.AuthorizeResponse
     else #CadetBlue OtherUser
-        OrderService -> CSMSService: [Kafka] CSMSService.CancelTransaction
+        OrderService -> CSMSService: [Kafka] CSMSService.AuthorizeResponse
     end
 else #DarkSeaGreen DRIVER VERIFICATION SUCCESS
     group #LightSteelBlue PAYMENT_REQUIRED = FALSE
         group #LightBlue MobileUser    
-                OrderService -> EVSEMgmt: [Kafka] EVSEMgmt.StartTransaction
+                OrderService -> EVSEMgmt: [Kafka] EVSEMgmt.AuthorizeResponse
         else #CadetBlue OtherUser
-            OrderService -> CSMSService: [Kafka] CSMSService.StartTransaction
+            OrderService -> CSMSService: [Kafka] CSMSService.AuthorizeResponse
         end
     else #LightSteelBlue PAYMENT_REQUIRED = TRUE 
         EVDriverService -> PaymentService: [Kafka] MsPaymentService.AuthorizePaymentRequest
