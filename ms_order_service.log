@@ -1,132 +1,226 @@
-05/28/2024 01:54:42 PM - microservice_utils.settings - INFO - Starting kafka connection
-05/28/2024 01:54:42 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
-05/28/2024 01:54:43 PM - microservice_utils.settings - INFO - Database Initialized
-05/28/2024 01:54:43 PM - microservice_utils.settings - INFO - Starting Flask server
-05/28/2024 01:54:43 PM - microservice_utils.settings - INFO - Initialize kafka: 192.168.37.14:9092 Liteon_EI_Kafka Liteon_EI_Kafka
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO - Cluster gc9AfiGdQmuOfWeaYirJhA metadata (response from broker 192.168.37.14:9092/0):
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -  1 brokers:
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   192.168.37.14:9092/0  (controller)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -  30 topics:
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "__transaction_state" with 50 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "RemoteControlRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "LocalAuthorizationRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-reservation" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "__consumer_offsets" with 50 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "ISO15118Request" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "ProvisioningRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "AvailabilityRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-log-ocpp-message" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "CreateOrder" with 3 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-evse-output" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "DriverVerificationResponse" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "RejectOrder" with 3 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "DriverVerificationRequest" with 3 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-evse" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "ReservationRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-order-output" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "SecurityRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "AuthorizeResponse" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "AuthorizeRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "CancelPaymentRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "RemoteControlResponse" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "AuthorizePaymentResponse" with 3 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "OneEMSMessageLog" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "DiagnosticsRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "DataTransferRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-order" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "ReservationResponse" with 3 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "SmartChargingRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "FirmwareRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -  3 consumer groups
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -  "csms_consumer" with 1 member(s), protocol: roundrobin, protocol_type: consumer
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -  "ms_order_service" with 2 member(s), protocol: range, protocol_type: consumer
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -  "ms_ev_driver_management" with 2 member(s), protocol: range, protocol_type: consumer
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO - === Starting Consume-Transform-Process loop ===
-05/28/2024 01:54:43 PM - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:7031
- * Running on http://192.168.37.17:7031
-05/28/2024 01:54:43 PM - werkzeug - INFO - [33mPress CTRL+C to quit[0m
-05/28/2024 01:54:43 PM - werkzeug - INFO -  * Restarting with stat
-05/28/2024 01:54:43 PM - microservice_utils.settings - INFO - Starting kafka connection
-05/28/2024 01:54:43 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
-05/28/2024 01:54:43 PM - microservice_utils.settings - INFO - Database Initialized
-05/28/2024 01:54:43 PM - microservice_utils.settings - INFO - Starting Flask server
-05/28/2024 01:54:43 PM - microservice_utils.settings - INFO - Initialize kafka: 192.168.37.14:9092 Liteon_EI_Kafka Liteon_EI_Kafka
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO - Cluster gc9AfiGdQmuOfWeaYirJhA metadata (response from broker 192.168.37.14:9092/0):
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -  1 brokers:
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   192.168.37.14:9092/0  (controller)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -  30 topics:
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "__transaction_state" with 50 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "RemoteControlRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "LocalAuthorizationRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-reservation" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "__consumer_offsets" with 50 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "ISO15118Request" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "ProvisioningRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "AvailabilityRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-log-ocpp-message" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "CreateOrder" with 3 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-evse-output" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "DriverVerificationResponse" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "RejectOrder" with 3 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "DriverVerificationRequest" with 3 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-evse" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "ReservationRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-order-output" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "SecurityRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "AuthorizeResponse" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "AuthorizeRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "CancelPaymentRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "RemoteControlResponse" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "AuthorizePaymentResponse" with 3 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "OneEMSMessageLog" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "DiagnosticsRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "DataTransferRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-order" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "ReservationResponse" with 3 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "SmartChargingRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -   "FirmwareRequest" with 1 partition(s)
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -  3 consumer groups
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -  "csms_consumer" with 1 member(s), protocol: roundrobin, protocol_type: consumer
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -  "ms_order_service" with 3 member(s), protocol: , protocol_type: consumer
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO -  "ms_ev_driver_management" with 2 member(s), protocol: range, protocol_type: consumer
-05/28/2024 01:54:43 PM - ms_tools.kafka_management.kafka_app - INFO - === Starting Consume-Transform-Process loop ===
-05/28/2024 01:54:43 PM - werkzeug - WARNING -  * Debugger is active!
-05/28/2024 01:54:43 PM - werkzeug - INFO -  * Debugger PIN: 940-417-292
-05/28/2024 01:55:27 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of CreateOrder [0] at 2====
-05/28/2024 01:55:27 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of CreateOrder [1] at 2====
-05/28/2024 01:55:27 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of DriverVerificationResponse [0] at 58====
-05/28/2024 01:55:27 PM - ms_tools.kafka_management.kafka_app - INFO - === Processing message at input offset 2 ===
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - Handling message: None RejectOrder {'request_id': 'req-MUserA-1'} {"meta": {"request_id": "req-MUserA-1", "timestamp": "2024-05-28 08:39:39", "producer": "Order Service", "version": "1.0.0", "type": "CancelReservation", "action": "ReserveNow"}, "evse": {"charge_point_id": "test_add_evse1", "subprotocol": "ocpp1.6"}, "data": {"connector_id": 0, "id_tag": "MUserA", "meter_start": 1000, "timestamp": "2021-09-01 00:00:00", "reservation_id": 0, "trigger_method": "cancel_order", "start_time": "2021-09-01 00:00:00", "requires_payment": false, "transaction_id": 378, "is_reservation": null, "is_charging": false, "tenant_id": null, "status_code": 409, "mobile_id": "MUserA", "id_tag_status": "ConcurrentTx"}}
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - request_id: req-MUserA-1
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - validate: {'error_description': {}}
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - Validation Passed
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - #############################################
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - Updating order: {'meta': {'request_id': 'req-MUserA-1', 'timestamp': '2024-05-28 08:39:39', 'producer': 'Order Service', 'version': '1.0.0', 'type': 'CancelReservation', 'action': 'ReserveNow'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'connector_id': 0, 'id_tag': 'MUserA', 'meter_start': 1000, 'timestamp': '2021-09-01 00:00:00', 'reservation_id': 0, 'trigger_method': 'cancel_order', 'start_time': '2021-09-01 00:00:00', 'requires_payment': False, 'transaction_id': 378, 'is_reservation': None, 'is_charging': False, 'tenant_id': None, 'status_code': 409, 'mobile_id': 'MUserA', 'id_tag_status': 'ConcurrentTx'}}
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - order_exist: <Order 378>
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - old_status: Cancelled
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - transaction_exists exist: <Transaction 378>
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - Charging ind: False
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - Reservation ind: False
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - old_status: Cancelled
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - new_status: Cancelled
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - Transaction detail: Order created for make_reservation.make_reservation Initated. Order status updated from Created to AuthorizationFailed from AuthorizeResponse.cancel_order Initated. Order status updated from AuthorizationFailed to Cancelled from CancelReservation.cancel_order Initated. Order status updated from Cancelled to Cancelled from CancelReservation.cancel_order Initated. Order status updated from Cancelled to Cancelled from CancelReservation.cancel_order Initated. Order status updated from Cancelled to Cancelled from CancelReservation.
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - producer: Order Service
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - trigger_method: cancel_order
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - order_status: Cancelled
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - data: {'meta': {'request_id': 'req-MUserA-1', 'timestamp': '2024-05-28 08:39:39', 'producer': 'Order Service', 'version': '1.0.0', 'type': 'CancelReservation', 'action': 'ReserveNow'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'connector_id': 0, 'id_tag': 'MUserA', 'meter_start': 1000, 'timestamp': '2021-09-01 00:00:00', 'reservation_id': 0, 'trigger_method': 'cancel_order', 'start_time': '2021-09-01 00:00:00', 'requires_payment': False, 'transaction_id': 378, 'is_reservation': False, 'is_charging': False, 'tenant_id': None, 'status_code': 409, 'mobile_id': 'MUserA', 'id_tag_status': 'ConcurrentTx'}}
-05/28/2024 01:55:27 PM - microservice_utils.settings - INFO - Kafka topic: None
-05/28/2024 01:55:27 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of RejectOrder [1] at 6====
-05/28/2024 01:55:27 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of ReservationResponse [0] at 3====
-05/28/2024 01:55:27 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of ReservationResponse [1] at 1====
-05/28/2024 01:55:27 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of CreateOrder [2] at 8====
-05/28/2024 01:55:27 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of ReservationResponse [2] at 3====
-05/28/2024 01:55:27 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of RejectOrder [0] at 4====
-05/28/2024 01:55:28 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of AuthorizePaymentResponse [2] at 0====
-05/28/2024 01:55:28 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of RejectOrder [2] at 0====
-05/28/2024 01:55:28 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached end of input ===
-05/28/2024 01:55:28 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of AuthorizePaymentResponse [1] at 0====
-05/28/2024 01:55:28 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of AuthorizePaymentResponse [0] at 0====
-05/28/2024 01:55:28 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached end of input ===
-05/28/2024 02:01:18 PM - werkzeug - INFO -  * Detected change in '/home/cxe/Project/one ems/ms_order_service/flask_app/services/update_order.py', reloading
+05/30/2024 04:35:30 PM - ms_tools.kafka_management.kafka_app - INFO - === Processing message at input offset 12 ===
+05/30/2024 04:35:30 PM - microservice_utils.settings - INFO - Handling message: None CreateOrder {} {"meta": {"request_id": "1717058130619", "timestamp": "2024-05-30T08:35:30.624019+00:00Z", "producer": "OCPP as a Service", "version": "1.0", "type": "ocpp_incoming_message", "action": "CreateOrder"}, "evse": {"charge_point_id": "test_add_evse1", "subprotocol": "ocpp1.6"}, "data": {"id_tag": "MUserA", "trigger_method": "authorize"}}
+05/30/2024 04:35:30 PM - microservice_utils.settings - INFO - request_id: 1717058130619
+05/30/2024 04:35:30 PM - microservice_utils.settings - INFO - validate: {'error_description': {}}
+05/30/2024 04:35:30 PM - microservice_utils.settings - INFO - Validation Passed
+05/30/2024 04:35:30 PM - microservice_utils.settings - INFO - Creating order for RFID: MUserA
+05/30/2024 04:35:31 PM - microservice_utils.settings - INFO - Transaction created: <Transaction 444>
+05/30/2024 04:35:31 PM - ms_tools.kafka_management.kafka_app - INFO - === Data: {'meta': {'timestamp': '2024-05-30 16:35:30', 'version': '1.0.0', 'type': 'order_creation', 'action': 'CreateOrder', 'producer': 'OCPP as a Service', 'request_id': '1717058130619'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 444, 'charge_point_id': 'test_add_evse1', 'connector_id': None, 'id_tag': 'MUserA', 'is_charging': False, 'is_reservation': False, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'authorize', 'status_code': 201, 'id_tag_status': None, 'expiry_dt': None}}===
+05/30/2024 04:35:31 PM - ms_tools.kafka_management.kafka_app - INFO - === Request ID: 1717058130619 ===
+05/30/2024 04:35:31 PM - ms_tools.kafka_management.kafka_app - INFO - === Producing message to DriverVerificationRequest === 
+ {'request_id': '1717058130619'} 
+ {'meta': {'timestamp': '2024-05-30 16:35:30', 'version': '1.0.0', 'type': 'order_creation', 'action': 'CreateOrder', 'producer': 'OCPP as a Service', 'request_id': '1717058130619'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 444, 'charge_point_id': 'test_add_evse1', 'connector_id': None, 'id_tag': 'MUserA', 'is_charging': False, 'is_reservation': False, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'authorize', 'status_code': 201, 'id_tag_status': None, 'expiry_dt': None}}
+05/30/2024 04:35:31 PM - ms_tools.kafka_management.kafka_app - INFO - === Committing transaction at input offset ===
+05/30/2024 04:35:31 PM - ms_tools.kafka_management.kafka_app - INFO - === Return topic: None ===
+05/30/2024 04:35:31 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of CreateOrder [0] at 13====
+05/30/2024 04:35:31 PM - ms_tools.kafka_management.kafka_app - INFO - Message None successfully produced to DriverVerificationRequest [2] at offset 0
+05/30/2024 04:35:32 PM - ms_tools.kafka_management.kafka_app - INFO - === Processing message at input offset 0 ===
+05/30/2024 04:35:32 PM - microservice_utils.settings - INFO - Handling message: None DriverVerificationResponse {'request_id': '1717058130619'} {"meta": {"timestamp": "2024-05-30 16:35:31", "version": "1.0.0", "type": "AuthorizeResponse", "action": "CreateOrder", "producer": "OCPP as a Service", "request_id": "1717058130619"}, "evse": {"charge_point_id": "test_add_evse1", "subprotocol": "ocpp1.6"}, "data": {"transaction_id": 444, "charge_point_id": "test_add_evse1", "connector_id": null, "id_tag": "MUserA", "is_charging": false, "is_reservation": false, "requires_payment": null, "tenant_id": null, "trigger_method": "authorize", "status_code": 201, "id_tag_status": "Accepted", "expiry_dt": null, "mobile_id": "MUserA", "expiry_date": null}}
+05/30/2024 04:35:32 PM - microservice_utils.settings - INFO - request_id: 1717058130619
+05/30/2024 04:35:32 PM - microservice_utils.settings - INFO - validate: {'error_description': {}}
+05/30/2024 04:35:32 PM - microservice_utils.settings - INFO - Validation Passed
+05/30/2024 04:35:32 PM - microservice_utils.settings - INFO - Updating Order: {'meta': {'timestamp': '2024-05-30 16:35:31', 'version': '1.0.0', 'type': 'AuthorizeResponse', 'action': 'CreateOrder', 'producer': 'OCPP as a Service', 'request_id': '1717058130619'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 444, 'charge_point_id': 'test_add_evse1', 'connector_id': None, 'id_tag': 'MUserA', 'is_charging': False, 'is_reservation': False, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'authorize', 'status_code': 201, 'id_tag_status': 'Accepted', 'expiry_dt': None, 'mobile_id': 'MUserA', 'expiry_date': None}}
+05/30/2024 04:35:32 PM - microservice_utils.settings - INFO - #############################################
+05/30/2024 04:35:32 PM - microservice_utils.settings - INFO - Updating order: KafkaPayload(timestamp='OCPP as a Service', version='1.0.0', meta_type='AuthorizeResponse', action='CreateOrder', producer='OCPP as a Service', request_id='1717058130619', transaction_id=444, charge_point_id='test_add_evse1', subprotocol='ocpp1.6', connector_id=None, id_tag='MUserA', is_charging=False, is_reservation=False, requires_payment=None, tenant_id=None, trigger_method='authorize', status_code=201, id_tag_status='Accepted', expiry_date='2024-05-30 16:50:32')
+05/30/2024 04:35:33 PM - microservice_utils.settings - INFO - order_exist: <Order 444>
+05/30/2024 04:35:33 PM - microservice_utils.settings - INFO - old_status: Created
+05/30/2024 04:35:33 PM - microservice_utils.settings - INFO - transaction_exists exist: <Transaction 444>
+05/30/2024 04:35:33 PM - microservice_utils.settings - INFO - Transaction detail: Order created for authorize.authorize Initated, rfid_status:Accepted, order status updated from Created to Authorized from AuthorizeResponse.
+05/30/2024 04:35:33 PM - microservice_utils.settings - INFO - Charging ind: None
+05/30/2024 04:35:33 PM - microservice_utils.settings - INFO - Reservation ind: None
+05/30/2024 04:35:33 PM - microservice_utils.settings - INFO - producer: OCPP as a Service
+05/30/2024 04:35:33 PM - microservice_utils.settings - INFO - trigger_method: authorize
+05/30/2024 04:35:33 PM - microservice_utils.settings - INFO - order_status: Authorized
+05/30/2024 04:35:33 PM - microservice_utils.settings - INFO - Kafka topic: AuthorizeResponse
+05/30/2024 04:35:33 PM - microservice_utils.settings - INFO - Kafka topic: AuthorizeResponse
+05/30/2024 04:35:33 PM - microservice_utils.settings - INFO - data: {'meta': {'timestamp': '2024-05-30 16:35:33', 'version': '1.0.0', 'type': 'AuthorizeResponse', 'action': 'CreateOrder', 'producer': 'Order Service', 'request_id': '1717058130619'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 444, 'charge_point_id': 'test_add_evse1', 'connector_id': None, 'id_tag': 'MUserA', 'is_charging': None, 'is_reservation': None, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'authorize', 'status_code': 201, 'id_tag_status': 'Accepted', 'expiry_dt': None}}
+05/30/2024 04:35:33 PM - microservice_utils.settings - INFO - Kafka topic: AuthorizeResponse
+05/30/2024 04:35:33 PM - microservice_utils.settings - INFO - ###################
+05/30/2024 04:35:33 PM - microservice_utils.settings - INFO - KAFKA OUT: {'meta': {'timestamp': '2024-05-30 16:35:33', 'version': '1.0.0', 'type': 'AuthorizeResponse', 'action': 'CreateOrder', 'producer': 'Order Service', 'request_id': '1717058130619'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 444, 'charge_point_id': 'test_add_evse1', 'connector_id': None, 'id_tag': 'MUserA', 'is_charging': None, 'is_reservation': None, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'authorize', 'status_code': 201, 'id_tag_status': 'Accepted', 'expiry_dt': None}}
+05/30/2024 04:35:33 PM - ms_tools.kafka_management.kafka_app - INFO - === Data: {'meta': {'timestamp': '2024-05-30 16:35:33', 'version': '1.0.0', 'type': 'AuthorizeResponse', 'action': 'CreateOrder', 'producer': 'Order Service', 'request_id': '1717058130619'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 444, 'charge_point_id': 'test_add_evse1', 'connector_id': None, 'id_tag': 'MUserA', 'is_charging': None, 'is_reservation': None, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'authorize', 'status_code': 201, 'id_tag_status': 'Accepted', 'expiry_dt': None}}===
+05/30/2024 04:35:33 PM - ms_tools.kafka_management.kafka_app - INFO - === Request ID: 1717058130619 ===
+05/30/2024 04:35:33 PM - ms_tools.kafka_management.kafka_app - INFO - === Producing message to AuthorizeResponse === 
+ {'request_id': '1717058130619'} 
+ {'meta': {'timestamp': '2024-05-30 16:35:33', 'version': '1.0.0', 'type': 'AuthorizeResponse', 'action': 'CreateOrder', 'producer': 'Order Service', 'request_id': '1717058130619'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 444, 'charge_point_id': 'test_add_evse1', 'connector_id': None, 'id_tag': 'MUserA', 'is_charging': None, 'is_reservation': None, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'authorize', 'status_code': 201, 'id_tag_status': 'Accepted', 'expiry_dt': None}}
+05/30/2024 04:35:33 PM - ms_tools.kafka_management.kafka_app - INFO - === Committing transaction at input offset ===
+05/30/2024 04:35:33 PM - ms_tools.kafka_management.kafka_app - INFO - === Return topic: None ===
+05/30/2024 04:35:33 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of DriverVerificationResponse [2] at 2====
+05/30/2024 04:35:33 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached end of input ===
+05/30/2024 04:35:34 PM - ms_tools.kafka_management.kafka_app - INFO - Message None successfully produced to AuthorizeResponse [0] at offset 81
+05/30/2024 04:37:01 PM - ms_tools.kafka_management.kafka_app - INFO - === Processing message at input offset 13 ===
+05/30/2024 04:37:01 PM - microservice_utils.settings - INFO - Handling message: None CreateOrder {} {"meta": {"request_id": "1717058194834", "timestamp": "2024-05-30T08:37:01.799648+00:00Z", "producer": "OCPP as a Service", "version": "1.0", "type": "ocpp_incoming_message", "action": "CreateOrder"}, "evse": {"charge_point_id": "test_add_evse1", "subprotocol": "ocpp1.6"}, "data": {"connector_id": 1, "id_tag": "MUserA", "meter_start": 1000, "timestamp": "2024-05-30T08:35:28.191Z", "reservation_id": 319, "trigger_method": "start_transaction"}}
+05/30/2024 04:37:01 PM - microservice_utils.settings - INFO - request_id: 1717058194834
+05/30/2024 04:37:01 PM - microservice_utils.settings - INFO - validate: {'error_description': {}}
+05/30/2024 04:37:01 PM - microservice_utils.settings - INFO - Validation Passed
+05/30/2024 04:37:02 PM - microservice_utils.settings - INFO - Creating order for RFID: MUserA
+05/30/2024 04:37:02 PM - microservice_utils.settings - INFO - Transaction created: <Transaction 445>
+05/30/2024 04:37:02 PM - ms_tools.kafka_management.kafka_app - INFO - === Data: {'meta': {'timestamp': '2024-05-30 16:37:02', 'version': '1.0.0', 'type': 'order_creation', 'action': 'CreateOrder', 'producer': 'OCPP as a Service', 'request_id': '1717058194834'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 445, 'charge_point_id': 'test_add_evse1', 'connector_id': 1, 'id_tag': 'MUserA', 'is_charging': False, 'is_reservation': False, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'start_transaction', 'status_code': 201, 'id_tag_status': None, 'expiry_dt': None}}===
+05/30/2024 04:37:02 PM - ms_tools.kafka_management.kafka_app - INFO - === Request ID: 1717058194834 ===
+05/30/2024 04:37:02 PM - ms_tools.kafka_management.kafka_app - INFO - === Producing message to DriverVerificationRequest === 
+ {'request_id': '1717058194834'} 
+ {'meta': {'timestamp': '2024-05-30 16:37:02', 'version': '1.0.0', 'type': 'order_creation', 'action': 'CreateOrder', 'producer': 'OCPP as a Service', 'request_id': '1717058194834'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 445, 'charge_point_id': 'test_add_evse1', 'connector_id': 1, 'id_tag': 'MUserA', 'is_charging': False, 'is_reservation': False, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'start_transaction', 'status_code': 201, 'id_tag_status': None, 'expiry_dt': None}}
+05/30/2024 04:37:02 PM - ms_tools.kafka_management.kafka_app - INFO - === Committing transaction at input offset ===
+05/30/2024 04:37:02 PM - ms_tools.kafka_management.kafka_app - INFO - === Return topic: None ===
+05/30/2024 04:37:02 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of CreateOrder [0] at 14====
+05/30/2024 04:37:02 PM - ms_tools.kafka_management.kafka_app - INFO - Message None successfully produced to DriverVerificationRequest [1] at offset 0
+05/30/2024 04:37:03 PM - ms_tools.kafka_management.kafka_app - INFO - === Processing message at input offset 0 ===
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - Handling message: None DriverVerificationResponse {'request_id': '1717058194834'} {"meta": {"timestamp": "2024-05-30 16:37:02", "version": "1.0.0", "type": "AuthorizeResponse", "action": "CreateOrder", "producer": "OCPP as a Service", "request_id": "1717058194834"}, "evse": {"charge_point_id": "test_add_evse1", "subprotocol": "ocpp1.6"}, "data": {"transaction_id": 445, "charge_point_id": "test_add_evse1", "connector_id": 1, "id_tag": "MUserA", "is_charging": true, "is_reservation": false, "requires_payment": null, "tenant_id": null, "trigger_method": "start_transaction", "status_code": 201, "id_tag_status": "Accepted", "expiry_dt": null, "mobile_id": "MUserA", "expiry_date": null}}
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - request_id: 1717058194834
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - validate: {'error_description': {}}
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - Validation Passed
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - Updating Order: {'meta': {'timestamp': '2024-05-30 16:37:02', 'version': '1.0.0', 'type': 'AuthorizeResponse', 'action': 'CreateOrder', 'producer': 'OCPP as a Service', 'request_id': '1717058194834'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 445, 'charge_point_id': 'test_add_evse1', 'connector_id': 1, 'id_tag': 'MUserA', 'is_charging': True, 'is_reservation': False, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'start_transaction', 'status_code': 201, 'id_tag_status': 'Accepted', 'expiry_dt': None, 'mobile_id': 'MUserA', 'expiry_date': None}}
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - #############################################
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - Updating order: KafkaPayload(timestamp='OCPP as a Service', version='1.0.0', meta_type='AuthorizeResponse', action='CreateOrder', producer='OCPP as a Service', request_id='1717058194834', transaction_id=445, charge_point_id='test_add_evse1', subprotocol='ocpp1.6', connector_id=1, id_tag='MUserA', is_charging=True, is_reservation=False, requires_payment=None, tenant_id=None, trigger_method='start_transaction', status_code=201, id_tag_status='Accepted', expiry_date='2024-05-30 16:52:03')
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - order_exist: <Order 445>
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - old_status: Created
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - transaction_exists exist: <Transaction 445>
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - Transaction detail: Order created for start_transaction.start_transaction Initated, rfid_status:Accepted, order status updated from Created to Authorized from AuthorizeResponse.
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - Charging ind: True
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - Reservation ind: False
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - old_status: Authorized
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - new_status: Charging
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - Transaction detail: Order created for start_transaction.start_transaction Initated, rfid_status:Accepted, order status updated from Created to Authorized from AuthorizeResponse.start_transaction Initated, driver return rfid_status:Accepted, order status updated from Authorized to Charging from AuthorizeResponse.
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - producer: OCPP as a Service
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - trigger_method: start_transaction
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - order_status: Charging
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - data: {'meta': {'timestamp': '2024-05-30 16:37:03', 'version': '1.0.0', 'type': 'RemoteControlResponse', 'action': 'RemoteStartTransaction', 'producer': 'Order Service', 'request_id': '1717058194834'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 445, 'id_tag_info': {'status': 'Accepted', 'parent_id_tag': 'MUserA', 'expiry_date': '2024-05-30 16:52:03'}}}
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - Kafka topic: RemoteControlResponse
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - ###################
+05/30/2024 04:37:03 PM - microservice_utils.settings - INFO - KAFKA OUT: {'meta': {'timestamp': '2024-05-30 16:37:03', 'version': '1.0.0', 'type': 'RemoteControlResponse', 'action': 'RemoteStartTransaction', 'producer': 'Order Service', 'request_id': '1717058194834'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 445, 'id_tag_info': {'status': 'Accepted', 'parent_id_tag': 'MUserA', 'expiry_date': '2024-05-30 16:52:03'}}}
+05/30/2024 04:37:03 PM - ms_tools.kafka_management.kafka_app - INFO - === Data: {'meta': {'timestamp': '2024-05-30 16:37:03', 'version': '1.0.0', 'type': 'RemoteControlResponse', 'action': 'RemoteStartTransaction', 'producer': 'Order Service', 'request_id': '1717058194834'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 445, 'id_tag_info': {'status': 'Accepted', 'parent_id_tag': 'MUserA', 'expiry_date': '2024-05-30 16:52:03'}}}===
+05/30/2024 04:37:03 PM - ms_tools.kafka_management.kafka_app - INFO - === Request ID: 1717058194834 ===
+05/30/2024 04:37:03 PM - ms_tools.kafka_management.kafka_app - INFO - === Producing message to RemoteControlResponse === 
+ {'request_id': '1717058194834'} 
+ {'meta': {'timestamp': '2024-05-30 16:37:03', 'version': '1.0.0', 'type': 'RemoteControlResponse', 'action': 'RemoteStartTransaction', 'producer': 'Order Service', 'request_id': '1717058194834'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 445, 'id_tag_info': {'status': 'Accepted', 'parent_id_tag': 'MUserA', 'expiry_date': '2024-05-30 16:52:03'}}}
+05/30/2024 04:37:03 PM - ms_tools.kafka_management.kafka_app - INFO - === Committing transaction at input offset ===
+05/30/2024 04:37:03 PM - ms_tools.kafka_management.kafka_app - INFO - === Return topic: None ===
+05/30/2024 04:37:03 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of DriverVerificationResponse [0] at 2====
+05/30/2024 04:37:04 PM - ms_tools.kafka_management.kafka_app - INFO - Message None successfully produced to RemoteControlResponse [0] at offset 6
+05/30/2024 04:43:11 PM - ms_tools.kafka_management.kafka_app - INFO - === Processing message at input offset 14 ===
+05/30/2024 04:43:11 PM - microservice_utils.settings - INFO - Handling message: None CreateOrder {} {"meta": {"request_id": "1717058591184", "timestamp": "2024-05-30T08:43:11.189239+00:00Z", "producer": "OCPP as a Service", "version": "1.0", "type": "ocpp_incoming_message", "action": "CreateOrder"}, "evse": {"charge_point_id": "test_add_evse1", "subprotocol": "ocpp1.6"}, "data": {"id_tag": "MUserA", "trigger_method": "authorize"}}
+05/30/2024 04:43:11 PM - microservice_utils.settings - INFO - request_id: 1717058591184
+05/30/2024 04:43:11 PM - microservice_utils.settings - INFO - validate: {'error_description': {}}
+05/30/2024 04:43:11 PM - microservice_utils.settings - INFO - Validation Passed
+05/30/2024 04:43:13 PM - microservice_utils.settings - INFO - Creating order for RFID: MUserA
+05/30/2024 04:43:13 PM - microservice_utils.settings - INFO - Transaction created: <Transaction 446>
+05/30/2024 04:43:13 PM - ms_tools.kafka_management.kafka_app - INFO - === Data: {'meta': {'timestamp': '2024-05-30 16:43:13', 'version': '1.0.0', 'type': 'order_creation', 'action': 'CreateOrder', 'producer': 'OCPP as a Service', 'request_id': '1717058591184'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 446, 'charge_point_id': 'test_add_evse1', 'connector_id': None, 'id_tag': 'MUserA', 'is_charging': False, 'is_reservation': False, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'authorize', 'status_code': 201, 'id_tag_status': None, 'expiry_dt': None}}===
+05/30/2024 04:43:13 PM - ms_tools.kafka_management.kafka_app - INFO - === Request ID: 1717058591184 ===
+05/30/2024 04:43:13 PM - ms_tools.kafka_management.kafka_app - INFO - === Producing message to DriverVerificationRequest === 
+ {'request_id': '1717058591184'} 
+ {'meta': {'timestamp': '2024-05-30 16:43:13', 'version': '1.0.0', 'type': 'order_creation', 'action': 'CreateOrder', 'producer': 'OCPP as a Service', 'request_id': '1717058591184'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 446, 'charge_point_id': 'test_add_evse1', 'connector_id': None, 'id_tag': 'MUserA', 'is_charging': False, 'is_reservation': False, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'authorize', 'status_code': 201, 'id_tag_status': None, 'expiry_dt': None}}
+05/30/2024 04:43:13 PM - ms_tools.kafka_management.kafka_app - INFO - === Committing transaction at input offset ===
+05/30/2024 04:43:13 PM - ms_tools.kafka_management.kafka_app - INFO - === Return topic: None ===
+05/30/2024 04:43:13 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of CreateOrder [0] at 15====
+05/30/2024 04:43:14 PM - ms_tools.kafka_management.kafka_app - INFO - Message None successfully produced to DriverVerificationRequest [1] at offset 2
+05/30/2024 04:43:14 PM - ms_tools.kafka_management.kafka_app - INFO - === Processing message at input offset 0 ===
+05/30/2024 04:43:14 PM - microservice_utils.settings - INFO - Handling message: None DriverVerificationResponse {'request_id': '1717058591184'} {"meta": {"timestamp": "2024-05-30 16:43:14", "version": "1.0.0", "type": "AuthorizeResponse", "action": "CreateOrder", "producer": "OCPP as a Service", "request_id": "1717058591184"}, "evse": {"charge_point_id": "test_add_evse1", "subprotocol": "ocpp1.6"}, "data": {"transaction_id": 446, "charge_point_id": "test_add_evse1", "connector_id": null, "id_tag": "MUserA", "is_charging": false, "is_reservation": false, "requires_payment": null, "tenant_id": null, "trigger_method": "authorize", "status_code": 201, "id_tag_status": "Accepted", "expiry_dt": null, "mobile_id": "MUserA", "expiry_date": null}}
+05/30/2024 04:43:14 PM - microservice_utils.settings - INFO - request_id: 1717058591184
+05/30/2024 04:43:14 PM - microservice_utils.settings - INFO - validate: {'error_description': {}}
+05/30/2024 04:43:14 PM - microservice_utils.settings - INFO - Validation Passed
+05/30/2024 04:43:14 PM - microservice_utils.settings - INFO - Updating Order: {'meta': {'timestamp': '2024-05-30 16:43:14', 'version': '1.0.0', 'type': 'AuthorizeResponse', 'action': 'CreateOrder', 'producer': 'OCPP as a Service', 'request_id': '1717058591184'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 446, 'charge_point_id': 'test_add_evse1', 'connector_id': None, 'id_tag': 'MUserA', 'is_charging': False, 'is_reservation': False, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'authorize', 'status_code': 201, 'id_tag_status': 'Accepted', 'expiry_dt': None, 'mobile_id': 'MUserA', 'expiry_date': None}}
+05/30/2024 04:43:14 PM - microservice_utils.settings - INFO - #############################################
+05/30/2024 04:43:14 PM - microservice_utils.settings - INFO - Updating order: KafkaPayload(timestamp='OCPP as a Service', version='1.0.0', meta_type='AuthorizeResponse', action='CreateOrder', producer='OCPP as a Service', request_id='1717058591184', transaction_id=446, charge_point_id='test_add_evse1', subprotocol='ocpp1.6', connector_id=None, id_tag='MUserA', is_charging=False, is_reservation=False, requires_payment=None, tenant_id=None, trigger_method='authorize', status_code=201, id_tag_status='Accepted', expiry_date='2024-05-30 16:58:14')
+05/30/2024 04:43:14 PM - microservice_utils.settings - INFO - order_exist: <Order 446>
+05/30/2024 04:43:14 PM - microservice_utils.settings - INFO - old_status: Created
+05/30/2024 04:43:14 PM - microservice_utils.settings - INFO - transaction_exists exist: <Transaction 446>
+05/30/2024 04:43:14 PM - microservice_utils.settings - INFO - Transaction detail: Order created for authorize.authorize Initated, rfid_status:Accepted, order status updated from Created to Authorized from AuthorizeResponse.
+05/30/2024 04:43:14 PM - microservice_utils.settings - INFO - Charging ind: None
+05/30/2024 04:43:14 PM - microservice_utils.settings - INFO - Reservation ind: None
+05/30/2024 04:43:15 PM - microservice_utils.settings - INFO - producer: OCPP as a Service
+05/30/2024 04:43:15 PM - microservice_utils.settings - INFO - trigger_method: authorize
+05/30/2024 04:43:15 PM - microservice_utils.settings - INFO - order_status: Authorized
+05/30/2024 04:43:15 PM - microservice_utils.settings - INFO - Kafka topic: AuthorizeResponse
+05/30/2024 04:43:15 PM - microservice_utils.settings - INFO - Kafka topic: AuthorizeResponse
+05/30/2024 04:43:15 PM - microservice_utils.settings - INFO - data: {'meta': {'timestamp': '2024-05-30 16:43:15', 'version': '1.0.0', 'type': 'AuthorizeResponse', 'action': 'CreateOrder', 'producer': 'Order Service', 'request_id': '1717058591184'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 446, 'charge_point_id': 'test_add_evse1', 'connector_id': None, 'id_tag': 'MUserA', 'is_charging': None, 'is_reservation': None, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'authorize', 'status_code': 201, 'id_tag_status': 'Accepted', 'expiry_dt': None}}
+05/30/2024 04:43:15 PM - microservice_utils.settings - INFO - Kafka topic: AuthorizeResponse
+05/30/2024 04:43:15 PM - microservice_utils.settings - INFO - ###################
+05/30/2024 04:43:15 PM - microservice_utils.settings - INFO - KAFKA OUT: {'meta': {'timestamp': '2024-05-30 16:43:15', 'version': '1.0.0', 'type': 'AuthorizeResponse', 'action': 'CreateOrder', 'producer': 'Order Service', 'request_id': '1717058591184'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 446, 'charge_point_id': 'test_add_evse1', 'connector_id': None, 'id_tag': 'MUserA', 'is_charging': None, 'is_reservation': None, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'authorize', 'status_code': 201, 'id_tag_status': 'Accepted', 'expiry_dt': None}}
+05/30/2024 04:43:15 PM - ms_tools.kafka_management.kafka_app - INFO - === Data: {'meta': {'timestamp': '2024-05-30 16:43:15', 'version': '1.0.0', 'type': 'AuthorizeResponse', 'action': 'CreateOrder', 'producer': 'Order Service', 'request_id': '1717058591184'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 446, 'charge_point_id': 'test_add_evse1', 'connector_id': None, 'id_tag': 'MUserA', 'is_charging': None, 'is_reservation': None, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'authorize', 'status_code': 201, 'id_tag_status': 'Accepted', 'expiry_dt': None}}===
+05/30/2024 04:43:15 PM - ms_tools.kafka_management.kafka_app - INFO - === Request ID: 1717058591184 ===
+05/30/2024 04:43:15 PM - ms_tools.kafka_management.kafka_app - INFO - === Producing message to AuthorizeResponse === 
+ {'request_id': '1717058591184'} 
+ {'meta': {'timestamp': '2024-05-30 16:43:15', 'version': '1.0.0', 'type': 'AuthorizeResponse', 'action': 'CreateOrder', 'producer': 'Order Service', 'request_id': '1717058591184'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 446, 'charge_point_id': 'test_add_evse1', 'connector_id': None, 'id_tag': 'MUserA', 'is_charging': None, 'is_reservation': None, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'authorize', 'status_code': 201, 'id_tag_status': 'Accepted', 'expiry_dt': None}}
+05/30/2024 04:43:15 PM - ms_tools.kafka_management.kafka_app - INFO - === Committing transaction at input offset ===
+05/30/2024 04:43:15 PM - ms_tools.kafka_management.kafka_app - INFO - === Return topic: None ===
+05/30/2024 04:43:15 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of DriverVerificationResponse [1] at 2====
+05/30/2024 04:43:15 PM - ms_tools.kafka_management.kafka_app - INFO - Message None successfully produced to AuthorizeResponse [0] at offset 83
+05/30/2024 04:44:42 PM - ms_tools.kafka_management.kafka_app - INFO - === Processing message at input offset 15 ===
+05/30/2024 04:44:42 PM - microservice_utils.settings - INFO - Handling message: None CreateOrder {} {"meta": {"request_id": "1717058655080", "timestamp": "2024-05-30T08:44:42.059226+00:00Z", "producer": "OCPP as a Service", "version": "1.0", "type": "ocpp_incoming_message", "action": "CreateOrder"}, "evse": {"charge_point_id": "test_add_evse1", "subprotocol": "ocpp1.6"}, "data": {"connector_id": 1, "id_tag": "MUserA", "meter_start": 1000, "timestamp": "2024-05-30T08:43:09.948Z", "reservation_id": 319, "trigger_method": "start_transaction"}}
+05/30/2024 04:44:42 PM - microservice_utils.settings - INFO - request_id: 1717058655080
+05/30/2024 04:44:42 PM - microservice_utils.settings - INFO - validate: {'error_description': {}}
+05/30/2024 04:44:42 PM - microservice_utils.settings - INFO - Validation Passed
+05/30/2024 04:44:42 PM - microservice_utils.settings - INFO - Creating order for RFID: MUserA
+05/30/2024 04:44:42 PM - microservice_utils.settings - INFO - Transaction created: <Transaction 447>
+05/30/2024 04:44:42 PM - ms_tools.kafka_management.kafka_app - INFO - === Data: {'meta': {'timestamp': '2024-05-30 16:44:42', 'version': '1.0.0', 'type': 'order_creation', 'action': 'CreateOrder', 'producer': 'OCPP as a Service', 'request_id': '1717058655080'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 447, 'charge_point_id': 'test_add_evse1', 'connector_id': 1, 'id_tag': 'MUserA', 'is_charging': False, 'is_reservation': False, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'start_transaction', 'status_code': 201, 'id_tag_status': None, 'expiry_dt': None}}===
+05/30/2024 04:44:42 PM - ms_tools.kafka_management.kafka_app - INFO - === Request ID: 1717058655080 ===
+05/30/2024 04:44:42 PM - ms_tools.kafka_management.kafka_app - INFO - === Producing message to DriverVerificationRequest === 
+ {'request_id': '1717058655080'} 
+ {'meta': {'timestamp': '2024-05-30 16:44:42', 'version': '1.0.0', 'type': 'order_creation', 'action': 'CreateOrder', 'producer': 'OCPP as a Service', 'request_id': '1717058655080'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 447, 'charge_point_id': 'test_add_evse1', 'connector_id': 1, 'id_tag': 'MUserA', 'is_charging': False, 'is_reservation': False, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'start_transaction', 'status_code': 201, 'id_tag_status': None, 'expiry_dt': None}}
+05/30/2024 04:44:42 PM - ms_tools.kafka_management.kafka_app - INFO - === Committing transaction at input offset ===
+05/30/2024 04:44:42 PM - ms_tools.kafka_management.kafka_app - INFO - === Return topic: None ===
+05/30/2024 04:44:42 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of CreateOrder [0] at 16====
+05/30/2024 04:44:42 PM - ms_tools.kafka_management.kafka_app - INFO - Message None successfully produced to DriverVerificationRequest [2] at offset 2
+05/30/2024 04:44:43 PM - ms_tools.kafka_management.kafka_app - INFO - === Processing message at input offset 2 ===
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - Handling message: None DriverVerificationResponse {'request_id': '1717058655080'} {"meta": {"timestamp": "2024-05-30 16:44:42", "version": "1.0.0", "type": "AuthorizeResponse", "action": "CreateOrder", "producer": "OCPP as a Service", "request_id": "1717058655080"}, "evse": {"charge_point_id": "test_add_evse1", "subprotocol": "ocpp1.6"}, "data": {"transaction_id": 447, "charge_point_id": "test_add_evse1", "connector_id": 1, "id_tag": "MUserA", "is_charging": true, "is_reservation": false, "requires_payment": null, "tenant_id": null, "trigger_method": "start_transaction", "status_code": 201, "id_tag_status": "Accepted", "expiry_dt": null, "mobile_id": "MUserA", "expiry_date": null}}
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - request_id: 1717058655080
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - validate: {'error_description': {}}
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - Validation Passed
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - Updating Order: {'meta': {'timestamp': '2024-05-30 16:44:42', 'version': '1.0.0', 'type': 'AuthorizeResponse', 'action': 'CreateOrder', 'producer': 'OCPP as a Service', 'request_id': '1717058655080'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 447, 'charge_point_id': 'test_add_evse1', 'connector_id': 1, 'id_tag': 'MUserA', 'is_charging': True, 'is_reservation': False, 'requires_payment': None, 'tenant_id': None, 'trigger_method': 'start_transaction', 'status_code': 201, 'id_tag_status': 'Accepted', 'expiry_dt': None, 'mobile_id': 'MUserA', 'expiry_date': None}}
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - #############################################
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - Updating order: KafkaPayload(timestamp='OCPP as a Service', version='1.0.0', meta_type='AuthorizeResponse', action='CreateOrder', producer='OCPP as a Service', request_id='1717058655080', transaction_id=447, charge_point_id='test_add_evse1', subprotocol='ocpp1.6', connector_id=1, id_tag='MUserA', is_charging=True, is_reservation=False, requires_payment=None, tenant_id=None, trigger_method='start_transaction', status_code=201, id_tag_status='Accepted', expiry_date='2024-05-30 16:59:43')
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - order_exist: <Order 447>
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - old_status: Created
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - transaction_exists exist: <Transaction 447>
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - Transaction detail: Order created for start_transaction.start_transaction Initated, rfid_status:Accepted, order status updated from Created to Authorized from AuthorizeResponse.
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - Charging ind: True
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - Reservation ind: False
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - old_status: Authorized
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - new_status: Charging
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - Transaction detail: Order created for start_transaction.start_transaction Initated, rfid_status:Accepted, order status updated from Created to Authorized from AuthorizeResponse.start_transaction Initated, driver return rfid_status:Accepted, order status updated from Authorized to Charging from AuthorizeResponse.
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - producer: OCPP as a Service
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - trigger_method: start_transaction
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - order_status: Charging
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - data: {'meta': {'timestamp': '2024-05-30 16:44:43', 'version': '1.0.0', 'type': 'RemoteControlResponse', 'action': 'RemoteStartTransaction', 'producer': 'Order Service', 'request_id': '1717058655080'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 447, 'id_tag_info': {'status': 'Accepted', 'parent_id_tag': 'MUserA', 'expiry_date': '2024-05-30 16:59:43'}}}
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - Kafka topic: RemoteControlResponse
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - ###################
+05/30/2024 04:44:43 PM - microservice_utils.settings - INFO - KAFKA OUT: {'meta': {'timestamp': '2024-05-30 16:44:43', 'version': '1.0.0', 'type': 'RemoteControlResponse', 'action': 'RemoteStartTransaction', 'producer': 'Order Service', 'request_id': '1717058655080'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 447, 'id_tag_info': {'status': 'Accepted', 'parent_id_tag': 'MUserA', 'expiry_date': '2024-05-30 16:59:43'}}}
+05/30/2024 04:44:43 PM - ms_tools.kafka_management.kafka_app - INFO - === Data: {'meta': {'timestamp': '2024-05-30 16:44:43', 'version': '1.0.0', 'type': 'RemoteControlResponse', 'action': 'RemoteStartTransaction', 'producer': 'Order Service', 'request_id': '1717058655080'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 447, 'id_tag_info': {'status': 'Accepted', 'parent_id_tag': 'MUserA', 'expiry_date': '2024-05-30 16:59:43'}}}===
+05/30/2024 04:44:43 PM - ms_tools.kafka_management.kafka_app - INFO - === Request ID: 1717058655080 ===
+05/30/2024 04:44:43 PM - ms_tools.kafka_management.kafka_app - INFO - === Producing message to RemoteControlResponse === 
+ {'request_id': '1717058655080'} 
+ {'meta': {'timestamp': '2024-05-30 16:44:43', 'version': '1.0.0', 'type': 'RemoteControlResponse', 'action': 'RemoteStartTransaction', 'producer': 'Order Service', 'request_id': '1717058655080'}, 'evse': {'charge_point_id': 'test_add_evse1', 'subprotocol': 'ocpp1.6'}, 'data': {'transaction_id': 447, 'id_tag_info': {'status': 'Accepted', 'parent_id_tag': 'MUserA', 'expiry_date': '2024-05-30 16:59:43'}}}
+05/30/2024 04:44:43 PM - ms_tools.kafka_management.kafka_app - INFO - === Committing transaction at input offset ===
+05/30/2024 04:44:43 PM - ms_tools.kafka_management.kafka_app - INFO - === Return topic: None ===
+05/30/2024 04:44:43 PM - ms_tools.kafka_management.kafka_app - INFO - Message None successfully produced to RemoteControlResponse [0] at offset 8
+05/30/2024 04:44:43 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of DriverVerificationResponse [0] at 4====
+05/30/2024 05:07:51 PM - werkzeug - INFO -  * Detected change in '/home/cxe/Project/one ems/ms_order_service/flask_app/services/update_order.py', reloading
+05/30/2024 05:36:43 PM - sqlalchemy.pool.impl.QueuePool - ERROR - Exception during reset or similar
+Traceback (most recent call last):
+  File "/home/cxe/.local/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 988, in _finalize_fairy
+    fairy._reset(
+  File "/home/cxe/.local/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 1438, in _reset
+    pool._dialect.do_rollback(self)
+  File "/home/cxe/.local/lib/python3.10/site-packages/sqlalchemy/engine/default.py", line 692, in do_rollback
+    dbapi_connection.rollback()
+psycopg2.OperationalError: SSL connection has been closed unexpectedly
+
+05/30/2024 05:36:43 PM - sqlalchemy.pool.impl.QueuePool - ERROR - Exception during reset or similar
+Traceback (most recent call last):
+  File "/home/cxe/.local/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 988, in _finalize_fairy
+    fairy._reset(
+  File "/home/cxe/.local/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 1438, in _reset
+    pool._dialect.do_rollback(self)
+  File "/home/cxe/.local/lib/python3.10/site-packages/sqlalchemy/engine/default.py", line 692, in do_rollback
+    dbapi_connection.rollback()
+psycopg2.OperationalError: SSL connection has been closed unexpectedly
+
+05/30/2024 05:36:43 PM - sqlalchemy.pool.impl.QueuePool - ERROR - Exception during reset or similar
+Traceback (most recent call last):
+  File "/home/cxe/.local/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 988, in _finalize_fairy
+    fairy._reset(
+  File "/home/cxe/.local/lib/python3.10/site-packages/sqlalchemy/pool/base.py", line 1438, in _reset
+    pool._dialect.do_rollback(self)
+  File "/home/cxe/.local/lib/python3.10/site-packages/sqlalchemy/engine/default.py", line 692, in do_rollback
+    dbapi_connection.rollback()
+psycopg2.OperationalError: SSL connection has been closed unexpectedly
+

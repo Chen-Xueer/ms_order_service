@@ -1,6 +1,7 @@
 import json
 from microservice_utils.settings import logger
 from ms_tools.kafka_management.topics import MsOrderManagement, MsEvDriverManagement,MsPaymentManagement,MsCSMSManagement
+from flask_app.services.models import KafkaPayload
 from ms_tools.kafka_management.kafka_topic import Topic,KafkaMessage
 from flask_app.database_sessions import Database
 from flask_app.services.create_order import CreateOrder
@@ -29,21 +30,22 @@ def handler(message: KafkaMessage):
         
         if message.topic == MsOrderManagement.CreateOrder.value:
             create_order = CreateOrder()
-            non_blocking(create_order.create_order_rfid(data = data))
+            create_order.create_order_rfid(data = KafkaPayload(**data))
         
         if message.topic == MsOrderManagement.RejectOrder.value:
             update_order = UpdateOrder()   
-            update_order.update_order(data = data,cancel_ind = True)
+            update_order.update_order(data = KafkaPayload(**data),cancel_ind = True)
             
         if message.topic in (
             MsEvDriverManagement.DriverVerificationResponse.value,
             MsCSMSManagement.ReservationResponse.value,
             MsPaymentManagement.AuthorizePaymentResponse.value,
             MsPaymentManagement.CancelPaymentResponse.value,
-            MsCSMSManagement.StopTransaction.value
+            MsOrderManagement.StopTransaction.value
         ):
+            logger.info(f"Updating Order: {data}")
             update_order = UpdateOrder()   
-            update_order.update_order(data = data,cancel_ind = None)   
+            update_order.update_order(data = KafkaPayload(**data),cancel_ind = None)   
         
         #if message.topic in [MsEvDriverManagement.DriverVerificationResponse.value,]:
         #    from kafka_app.main import kafka_app
@@ -66,6 +68,7 @@ def validate_request(message: KafkaMessage):
         MsCSMSManagement.ReservationResponse.value,
         MsPaymentManagement.AuthorizePaymentResponse.value,
         MsOrderManagement.RejectOrder.value,
+        MsOrderManagement.StopTransaction.value
     ]:
         logger.info("Action Not Implemented")
         validate["error_description"]["action"] = "Action Not Implemented"
