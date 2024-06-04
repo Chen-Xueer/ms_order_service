@@ -13,6 +13,7 @@ class KafkaPayload:
     charge_point_id: Optional[str] = None
     subprotocol: Optional[str] = None
     connector_id: Optional[str] = None
+    start_time: Optional[str] = None
     id_tag: Optional[str] = None
     is_charging: Optional[bool] = None
     is_reservation: Optional[bool] = None
@@ -34,6 +35,7 @@ class KafkaPayload:
         self.subprotocol = kwargs.get("evse", {}).get("subprotocol")
         self.transaction_id = kwargs.get("data", {}).get("transaction_id")
         self.connector_id = kwargs.get("data", {}).get("connector_id")
+        self.start_time = kwargs.get("data", {}).get("start_time")
         self.id_tag = kwargs.get("data", {}).get("id_tag")
         self.is_charging = kwargs.get("data", {}).get("is_charging")
         self.is_reservation = kwargs.get("data", {}).get("is_reservation")
@@ -62,6 +64,7 @@ class KafkaPayload:
                 "transaction_id": self.transaction_id,
                 "charge_point_id": self.charge_point_id,
                 "connector_id": self.connector_id,
+                "start_time": self.start_time,
                 "id_tag": self.id_tag,
                 "is_charging": self.is_charging,
                 "is_reservation": self.is_reservation,

@@ -224,3 +224,146 @@ Traceback (most recent call last):
     dbapi_connection.rollback()
 psycopg2.OperationalError: SSL connection has been closed unexpectedly
 
+05/31/2024 03:34:56 PM - microservice_utils.settings - INFO - Starting kafka connection
+05/31/2024 03:34:56 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 03:34:56 PM - microservice_utils.settings - INFO - Database Initialized
+05/31/2024 03:34:56 PM - microservice_utils.settings - INFO - Starting Flask server
+05/31/2024 03:34:56 PM - microservice_utils.settings - INFO - Initialize kafka: 192.168.37.14:9092 Liteon_EI_Kafka Liteon_EI_Kafka
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO - Cluster gc9AfiGdQmuOfWeaYirJhA metadata (response from broker 192.168.37.14:9092/0):
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -  1 brokers:
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   192.168.37.14:9092/0  (controller)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -  30 topics:
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "__transaction_state" with 50 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "RemoteControlRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "LocalAuthorizationRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-reservation" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "__consumer_offsets" with 50 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "ISO15118Request" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "ProvisioningRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "RemoteControlResponse" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "AvailabilityRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-log-ocpp-message" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "CreateOrder" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-evse-output" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "DriverVerificationResponse" with 3 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "RejectOrder" with 3 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "DriverVerificationRequest" with 3 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-evse" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "ReservationRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-order-output" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "SecurityRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "AuthorizeResponse" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "AuthorizeRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "OneEMSMessageLog" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "StopTransaction" with 3 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "AuthorizePaymentResponse" with 3 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "DiagnosticsRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "DataTransferRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-order" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "ReservationResponse" with 3 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "SmartChargingRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "FirmwareRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -  3 consumer groups
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -  "csms_consumer" with 1 member(s), protocol: roundrobin, protocol_type: consumer
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -  "ms_order_service" with 0 member(s), protocol: , protocol_type: consumer
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -  "ms_ev_driver_management" with 0 member(s), protocol: , protocol_type: consumer
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO - === Starting Consume-Transform-Process loop ===
+05/31/2024 03:34:56 PM - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:7031
+ * Running on http://192.168.37.17:7031
+05/31/2024 03:34:56 PM - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+05/31/2024 03:34:56 PM - werkzeug - INFO -  * Restarting with stat
+05/31/2024 03:34:56 PM - microservice_utils.settings - INFO - Starting kafka connection
+05/31/2024 03:34:56 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 03:34:56 PM - microservice_utils.settings - INFO - Database Initialized
+05/31/2024 03:34:56 PM - microservice_utils.settings - INFO - Starting Flask server
+05/31/2024 03:34:56 PM - microservice_utils.settings - INFO - Initialize kafka: 192.168.37.14:9092 Liteon_EI_Kafka Liteon_EI_Kafka
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO - Cluster gc9AfiGdQmuOfWeaYirJhA metadata (response from broker 192.168.37.14:9092/0):
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -  1 brokers:
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   192.168.37.14:9092/0  (controller)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -  30 topics:
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "__transaction_state" with 50 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "RemoteControlRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "LocalAuthorizationRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-reservation" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "__consumer_offsets" with 50 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "ISO15118Request" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "ProvisioningRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "RemoteControlResponse" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "AvailabilityRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-log-ocpp-message" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "CreateOrder" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-evse-output" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "DriverVerificationResponse" with 3 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "RejectOrder" with 3 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "DriverVerificationRequest" with 3 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-evse" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "ReservationRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-order-output" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "SecurityRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "AuthorizeResponse" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "AuthorizeRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "OneEMSMessageLog" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "StopTransaction" with 3 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "AuthorizePaymentResponse" with 3 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "DiagnosticsRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "DataTransferRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "csms-order" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "ReservationResponse" with 3 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "SmartChargingRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -   "FirmwareRequest" with 1 partition(s)
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -  3 consumer groups
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -  "csms_consumer" with 1 member(s), protocol: roundrobin, protocol_type: consumer
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -  "ms_order_service" with 1 member(s), protocol: range, protocol_type: consumer
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO -  "ms_ev_driver_management" with 0 member(s), protocol: , protocol_type: consumer
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO - === Starting Consume-Transform-Process loop ===
+05/31/2024 03:34:56 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of CreateOrder [0] at 16====
+05/31/2024 03:34:56 PM - werkzeug - WARNING -  * Debugger is active!
+05/31/2024 03:34:57 PM - werkzeug - INFO -  * Debugger PIN: 284-311-037
+05/31/2024 03:34:57 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of DriverVerificationResponse [0] at 4====
+05/31/2024 03:34:57 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of DriverVerificationResponse [1] at 2====
+05/31/2024 03:34:57 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of DriverVerificationResponse [2] at 2====
+05/31/2024 03:34:57 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of RejectOrder [0] at 2====
+05/31/2024 03:34:57 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of ReservationResponse [1] at 1====
+05/31/2024 03:34:57 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of ReservationResponse [2] at 0====
+05/31/2024 03:34:57 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of RejectOrder [1] at 0====
+05/31/2024 03:34:57 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of RejectOrder [2] at 0====
+05/31/2024 03:34:57 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of ReservationResponse [0] at 0====
+05/31/2024 03:34:57 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of AuthorizePaymentResponse [1] at 0====
+05/31/2024 03:34:57 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of AuthorizePaymentResponse [2] at 0====
+05/31/2024 03:34:57 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of AuthorizePaymentResponse [0] at 0====
+05/31/2024 03:34:57 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached end of input ===
+05/31/2024 03:34:59 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of DriverVerificationResponse [2] at 2====
+05/31/2024 03:34:59 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of ReservationResponse [1] at 1====
+05/31/2024 03:34:59 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of RejectOrder [1] at 0====
+05/31/2024 03:34:59 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of ReservationResponse [0] at 0====
+05/31/2024 03:34:59 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of AuthorizePaymentResponse [1] at 0====
+05/31/2024 03:34:59 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of AuthorizePaymentResponse [0] at 0====
+05/31/2024 03:34:59 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of CreateOrder [0] at 16====
+05/31/2024 03:34:59 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of DriverVerificationResponse [0] at 4====
+05/31/2024 03:34:59 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of DriverVerificationResponse [1] at 2====
+05/31/2024 03:34:59 PM - ms_tools.kafka_management.kafka_app - INFO - === Reached the end of RejectOrder [0] at 2====
+05/31/2024 03:38:02 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 03:38:03 PM - microservice_utils.settings - INFO - Database Initialized
+05/31/2024 03:40:24 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 03:41:10 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 03:43:12 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 03:44:04 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 03:46:12 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 04:38:19 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 04:38:58 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 04:39:34 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 04:39:34 PM - microservice_utils.settings - INFO - Database Initialized
+05/31/2024 04:42:12 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 04:43:04 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 04:43:04 PM - microservice_utils.settings - ERROR - (X) Error while creating order: argument of type 'NoneType' is not iterable
+05/31/2024 04:43:04 PM - microservice_utils.settings - INFO - Order created: ({'message': 'insert order failed', 'action': 'order_creation', 'action_status': 'failed', 'status': 'error'}, 500)
+05/31/2024 04:45:46 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 04:48:15 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 04:48:40 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 04:48:46 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 04:51:03 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 04:58:01 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 05:02:45 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+05/31/2024 05:03:55 PM - botocore.credentials - INFO - Found credentials in shared credentials file: ~/.aws/credentials

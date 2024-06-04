@@ -1,0 +1,11 @@
+[run]
+omit =
+    tests/*
+    setup.py
+    */migrations/*
+    kafka_app/*
+    microservice_utils/*
+    resource/*
+    sqlalchemy_/*
+    main.py
+    test.py

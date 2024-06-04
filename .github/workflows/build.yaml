@@ -1,0 +1,91 @@
+name: Unit Test & SonarQube
+
+on:
+  # pull_request:
+  push:
+    #Triggered by push to master branch
+    branches:
+      - master
+      - "releases/**"
+      - "releases/**/*"
+
+jobs:
+  #first job run unit test
+  unit_test:
+    runs-on: self-hosted
+    steps:
+      #checkout
+      - uses: actions/checkout@v4
+      #setup python
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10.12"
+          # cache: "pip"
+      #run command install requirements and coverage
+      - run: pip install -r requirements.txt --force-reinstall
+      - run: pip install coverage
+      - run: coverage run -m unittest discover
+      - run: coverage report
+      # - run: coverage html
+      - run: coverage xml
+      #upload coverage report
+      - uses: actions/upload-artifact@v4
+        with:
+          name: oneems_order-service-coverage-report
+          path: coverage.xml
+          retention-days: 1
+      #Send notifications through the teams chanel
+      - name: Notify Successful
+        if: ${{ success() }}
+        uses: jdcargile/ms-teams-notification@v1.4
+        with:
+          github-token: ${{ github.token }} # this will use the runner's token.
+          ms-teams-webhook-uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
+          notification-summary: ${{ format('Successful | {0}:{1} | job:{2}', github.event_name, github.ref_name, github.job) }}
+          notification-color: 28A745
+          timezone: Asia/Singapore
+          verbose-logging: false
+      - name: Notify Failure
+        if: ${{ failure() }}
+        uses: jdcargile/ms-teams-notification@v1.4
+        with:
+          github-token: ${{ github.token }} # this will use the runner's token.
+          ms-teams-webhook-uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
+          notification-summary: ${{ format('Failure | {0}:{1} | job:{2}', github.event_name, github.ref_name, github.job) }}
+          notification-color: DC3545
+          timezone: Asia/Singapore
+          verbose-logging: false
+      - name: Notify Cancelled
+        if: ${{ cancelled() }}
+        uses: jdcargile/ms-teams-notification@v1.4
+        with:
+          github-token: ${{ github.token }} # this will use the runner's token.
+          ms-teams-webhook-uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
+          notification-summary: ${{ format('Cancelled | {0}:{1} | job:{2}', github.event_name, github.ref_name, github.job) }}
+          notification-color: FFC107
+          timezone: Asia/Singapore
+          verbose-logging: false
+
+  #the second job is sonarqube
+  sonarqube:
+    #must run unit test first
+    needs: [unit_test]
+    runs-on: self-hosted
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Disabling shallow clones is recommended for improving the relevancy of reporting
+          fetch-depth: 0
+      #download unit test coverage report
+      - uses: actions/download-artifact@v4
+        with:
+          #the name must be the same as uploaded
+          name: oneems_order-service-coverage-report
+          path: .
+      #run sonarqube
+      - uses: SonarSource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          # SONAR_ROOT_CERT: ${{ secrets.SONAR_ROOT_CERT }}
