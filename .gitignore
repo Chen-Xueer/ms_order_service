@@ -1,0 +1,17 @@
+# directories
+__pycache__/
+/venv
+backup/
+
+# log files
+*.log
+.env.actual
+.env.testing
+
+# alembic
+/alembic*
+/alembic.ini
+
+# coverage
+.coverage
+/htmlcov

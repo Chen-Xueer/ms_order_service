@@ -1,0 +1,41 @@
+@startuml
+' hide the spot
+' hide circle
+
+' avoid problems with angled crows feet
+skinparam linetype ortho
+
+
+entity "order" as order {
+    *transactional_id : number <<generated>>
+    *tenant_id: character varying
+    --
+    *status : character varying
+    charge_point_id : character varying
+    connector_id : number
+    driver_id : character varying
+    rfid: character varying
+    tariff_id : character varying
+    is_charging : boolean
+    is_reservation : boolean
+    requires_payment : boolean
+    create_at : timestamp
+    last_update : timestamp
+}
+
+entity "transaction" as transaction {
+    *transactional_id : number <<FK>>
+    --
+    *amount : number
+    energy_charged : number
+    duration : number
+    start_time : timestamp
+    end_time : timestamp
+    paid_by : character varying
+    transaction_details : character varying
+}
+
+
+order ||..|| transaction
+
+@enduml
