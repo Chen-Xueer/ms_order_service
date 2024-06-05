@@ -11,7 +11,7 @@ kafka_app = KafkaApp(
     brokers=os.environ.get("KAFKA_BOOTSTRAP_SERVER"),
     #security_protocol = "SASL_SSL",
     #sasl_mechanism="SCRAM-SHA-512",
-    sasl_username=os.environ.get("KAFKA_SASL_USERNAME"),
-    sasl_password=os.environ.get("KAFKA_SASL_PASSWORD", ""),
+    #sasl_username=os.environ.get("KAFKA_SASL_USERNAME"),
+    #sasl_password=os.environ.get("KAFKA_SASL_PASSWORD", ""),
     _response_timeout=120
 )
