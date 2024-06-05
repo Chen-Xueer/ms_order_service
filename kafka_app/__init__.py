@@ -1,5 +1,5 @@
 from kafka_app.handler import handler
-from ms_tools.kafka_management.topics import MsEvDriverManagement,MsPaymentManagement,MsOrderManagement,MsCSMSManagement
+from kafka_app.kafka_management.topic_enum import MsEvDriverManagement,MsPaymentManagement,MsOrderManagement,MsCSMSManagement
 
 
 def app_init():
@@ -7,11 +7,12 @@ def app_init():
 
     kafka_app.consume(
         [
-            MsOrderManagement.CreateOrder.value,
-            MsOrderManagement.RejectOrder.value,
-            MsCSMSManagement.ReservationResponse.value,
-            MsEvDriverManagement.DriverVerificationResponse.value,
-            MsPaymentManagement.AuthorizePaymentResponse.value,
+            MsOrderManagement.CREATE_ORDER.value,
+            MsOrderManagement.REJECT_ORDER.value,
+            MsCSMSManagement.RESERVATION_RESPONSE.value,
+            MsEvDriverManagement.DRIVER_VERIFICATION_RESPONSE.value,
+            MsPaymentManagement.AUTHORIZE_PAYMENT_RESPONSE.value,
+            MsOrderManagement.STOP_TRANSACTION.value,
         ],
         handler,
     )

@@ -1,12 +1,11 @@
 import json
 from microservice_utils.settings import logger
-from ms_tools.kafka_management.topics import MsOrderManagement, MsEvDriverManagement,MsPaymentManagement,MsCSMSManagement
+from kafka_app.kafka_management.topic_enum import MsOrderManagement, MsEvDriverManagement,MsPaymentManagement,MsCSMSManagement
 from flask_app.services.models import KafkaPayload
-from ms_tools.kafka_management.kafka_topic import Topic,KafkaMessage
+from kafka_app.kafka_management.kafka_topic import Topic,KafkaMessage
 from flask_app.database_sessions import Database
-from flask_app.services.create_order import CreateOrder
 from flask_app.services.update_order import UpdateOrder
-from ms_tools.kafka_management.kafka_app import non_blocking
+from kafka_app.kafka_management.kafka_app import non_blocking
 
 database= Database()
 session=database.init_session()
@@ -29,6 +28,7 @@ def handler(message: KafkaMessage):
             update_order.update_order(data = data)
         
         if message.topic == MsOrderManagement.CreateOrder.value:
+            from flask_app.services.create_order import CreateOrder
             create_order = CreateOrder()
             create_order.create_order_rfid(data = KafkaPayload(**data))
         
@@ -37,11 +37,11 @@ def handler(message: KafkaMessage):
             update_order.update_order(data = KafkaPayload(**data),cancel_ind = True)
             
         if message.topic in (
-            MsEvDriverManagement.DriverVerificationResponse.value,
-            MsCSMSManagement.ReservationResponse.value,
-            MsPaymentManagement.AuthorizePaymentResponse.value,
-            MsPaymentManagement.CancelPaymentResponse.value,
-            MsOrderManagement.StopTransaction.value
+            MsEvDriverManagement.DRIVER_VERIFICATION_RESPONSE.value,
+            MsCSMSManagement.RESERVATION_RESPONSE.value,
+            MsPaymentManagement.AUTHORIZE_PAYMENT_RESPONSE.value,
+            MsPaymentManagement.CANCEL_PAYMENT_RESPONSE.value,
+            MsOrderManagement.STOP_TRANSACTION.value
         ):
             logger.info(f"Updating Order: {data}")
             update_order = UpdateOrder()   
@@ -63,12 +63,12 @@ def validate_request(message: KafkaMessage):
     validate = {"error_description":{}}
 
     if message.topic not in [
-        MsOrderManagement.CreateOrder.value,
-        MsEvDriverManagement.DriverVerificationResponse.value,
-        MsCSMSManagement.ReservationResponse.value,
-        MsPaymentManagement.AuthorizePaymentResponse.value,
-        MsOrderManagement.RejectOrder.value,
-        MsOrderManagement.StopTransaction.value
+        MsOrderManagement.CREATE_ORDER.value,
+        MsEvDriverManagement.DRIVER_VERIFICATION_RESPONSE.value,
+        MsCSMSManagement.RESERVATION_RESPONSE.value,
+        MsPaymentManagement.AUTHORIZE_PAYMENT_RESPONSE.value,
+        MsOrderManagement.REJECT_ORDER.value,
+        MsOrderManagement.STOP_TRANSACTION.value
     ]:
         logger.info("Action Not Implemented")
         validate["error_description"]["action"] = "Action Not Implemented"

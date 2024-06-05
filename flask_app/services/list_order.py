@@ -2,11 +2,12 @@ import uuid
 from flask_app.database_sessions import Database
 from flask_app.services.common_function import DataValidation
 from microservice_utils.settings import logger
-from ms_tools.kafka_management.topics import MsEvDriverManagement, MsPaymentManagement
+from kafka_app.kafka_management.topic_enum import MsEvDriverManagement, MsPaymentManagement
 from sqlalchemy import and_, case, func, or_
 from sqlalchemy.sql.functions import coalesce
 from sqlalchemy_.ms_order_service.enum_types import ReturnActionStatus, ReturnStatus, OrderStatus
 from sqlalchemy_.ms_order_service.order import Order
+from sqlalchemy_.ms_order_service.tenant import Tenant
 from sqlalchemy_.ms_order_service.transaction import Transaction
 from typing import Tuple
 from datetime import datetime
@@ -19,10 +20,10 @@ class ListOrder:
     
     def list_order(self,tenant_id,transaction_id,keyword):
         try:
-            tenant_exists = self.data_validation.validate_tenants(tenant_id)
-            if tenant_exists is None:
-                return {"message": "tenant_exists not found", "action":"order_retrieval","action_status":ReturnActionStatus.FAILED.value,"status": ReturnStatus.ERROR.value},404
-            
+            tenant_exists = self.data_validation.validate_tenants(tenant_id=tenant_id,action='order_retrieval')
+            if not isinstance(tenant_exists,Tenant):
+                return tenant_exists
+        
             if transaction_id is not None:
                 filters = and_(Order.tenant_id == tenant_id, Order.transaction_id == transaction_id)
             else:
@@ -90,9 +91,9 @@ class ListOrder:
 
 
     def list_transaction_summary(self,tenant_id):
-        tenant_exists = self.data_validation.validate_tenants(tenant_id)
-        if tenant_exists is None:
-            return {"message": "tenant_exists not found", "action":"order_retrieval","action_status":ReturnActionStatus.FAILED.value,"status": ReturnStatus.ERROR.value},404
+        tenant_exists = self.data_validation.validate_tenants(tenant_id=tenant_id,action='transaction_summary_retrieval')
+        if not isinstance(tenant_exists,Tenant):
+            return tenant_exists
         
         summary = self.session.query(
                                     Order.status,
@@ -111,9 +112,9 @@ class ListOrder:
 
 
     def list_transaction_breakdown(self,tenant_id):
-        tenant_exists = self.data_validation.validate_tenants(tenant_id)
-        if tenant_exists is None:
-            return {"message": "tenant_exists not found", "action":"order_retrieval","action_status":ReturnActionStatus.FAILED.value,"status": ReturnStatus.ERROR.value},404
+        tenant_exists = self.data_validation.validate_tenants(tenant_id=tenant_id,action='transaction_breakdown_retrieval')
+        if not isinstance(tenant_exists,Tenant):
+            return tenant_exists
         
         status_case = case(
             *[(Order.status.in_([OrderStatus.AUTHORIZEDFAILED.value,OrderStatus.CANCELLED.value]),'failure')],

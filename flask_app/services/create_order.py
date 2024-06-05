@@ -3,9 +3,10 @@ from flask_app.database_sessions import Database
 from flask_app.services.common_function import DataValidation
 from flask_app.services.models import KafkaPayload
 from microservice_utils.settings import logger
-from ms_tools.kafka_management.topics import MsEvDriverManagement, MsPaymentManagement
+from kafka_app.kafka_management.topic_enum import MsEvDriverManagement
 from sqlalchemy_.ms_order_service.enum_types import ReturnActionStatus, ReturnStatus, OrderStatus
 from sqlalchemy_.ms_order_service.order import Order
+from sqlalchemy_.ms_order_service.tenant import Tenant
 from sqlalchemy_.ms_order_service.transaction import Transaction
 from typing import Tuple
 from datetime import datetime
@@ -79,22 +80,22 @@ class CreateOrder:
 
     def create_order_mobile_id(self,mobile_id,data:KafkaPayload,tenant_id):
         try:
-            #validation = self.data_validation.validate_tenants(tenant_id)
-            #if validation is None:
-            #    return {"message": "tenant_id not found", "action":"order_creation","action_status":ReturnActionStatus.FAILED.value,"status": ReturnStatus.ERROR.value},404
-
-            data.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            data.version = "1.0.0"
-            data.meta_type = "order_creation"
-            data.action = "RemoteStartTransaction"
+            tenant_exists = self.data_validation.validate_tenants(tenant_id=tenant_id,action=data.meta.meta_type)
+            if not isinstance(tenant_exists,Tenant):
+                return tenant_exists
+            
+            data.meta.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            data.meta.version = "1.0.0"
+            data.meta.meta_type = "order_creation"
+            data.meta.action = "RemoteStartTransaction"
             
             order_created = self.db_insert_order(
-                charge_point_id=data.charge_point_id,
+                charge_point_id=data.evse.charge_point_id,
                 connector_id=data.connector_id,
                 id_tag=mobile_id,
                 trigger_method=data.trigger_method,
                 tenant_id=tenant_id,
-                request_id = data.request_id
+                request_id = data.meta.request_id
             )
 
             logger.info(f"Order created: {order_created}")
@@ -121,7 +122,7 @@ class CreateOrder:
                 data.tenant_id = tenant_id
                 data.status_code = 201
                 
-                kafka_send(topic=MsEvDriverManagement.DriverVerificationRequest.value,data=data.to_dict(),request_id=data.request_id)
+                kafka_send(topic=MsEvDriverManagement.DRIVER_VERIFICATION_REQUEST.value,data=data.to_dict(),request_id=data.meta.request_id)
             
                 return data.to_dict()
         except Exception as e:
@@ -133,23 +134,23 @@ class CreateOrder:
     
     def create_order_rfid(self,data:KafkaPayload):
         try:
-            #validation = self.data_validation.validate_tenants(tenant_id)
-            #if validation is None:
-            #    return {"message": "tenant_id not found", "action":"order_creation","action_status":ReturnActionStatus.FAILED.value,"status": ReturnStatus.ERROR.value},404
-
-            data.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            data.version = "1.0.0"
-            data.meta_type = "order_creation"
+            tenant_exists = self.data_validation.validate_tenants(tenant_id=data.tenant_id,action=data.meta.meta_type)
+            if not isinstance(tenant_exists,Tenant):
+                return tenant_exists
+        
+            data.meta.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            data.meta.version = "1.0.0"
+            data.meta.meta_type = "order_creation"
 
             logger.info(f"Creating order for RFID: {data.id_tag}")
             
             order_created = self.db_insert_order(
-                charge_point_id=data.charge_point_id,
+                charge_point_id=data.evse.charge_point_id,
                 connector_id=data.connector_id,
                 id_tag=data.id_tag,
                 trigger_method=data.trigger_method,
                 tenant_id=data.tenant_id,
-                request_id = data.request_id
+                request_id = data.meta.request_id
             )
             
             if not isinstance(order_created,Order):
@@ -176,7 +177,7 @@ class CreateOrder:
                 data.requires_payment = order_created.requires_payment
                 data.status_code = 201
 
-                kafka_send(topic=MsEvDriverManagement.DriverVerificationRequest.value,data=data.to_dict(),request_id=data.request_id)
+                kafka_send(topic=MsEvDriverManagement.DRIVER_VERIFICATION_REQUEST.value,data=data.to_dict(),request_id=data.meta.request_id)
             
                 return data.to_dict()
         except Exception as e:
@@ -188,7 +189,7 @@ class CreateOrder:
     
 def kafka_send(topic: str, data: dict, request_id: str):
     from kafka_app.main import kafka_app
-    from ms_tools.kafka_management.kafka_topic import Topic
+    from kafka_app.kafka_management.kafka_topic import Topic
     try:
         kafka_app.send(
             topic=Topic(

@@ -1,23 +1,23 @@
 import asyncio
 from flask import request
-from flask_restx import Namespace, Resource
+from flask_restx import Resource
+from flask_restx._http import HTTPStatus
+from microservice_utils.api_namespace import ApiNamespace
 from flask_app.swagger_models import RequestModel,ResponseModel
 from flask_app.services.create_order import CreateOrder
 from flask_app.services.list_order import ListOrder
-from flask_app.auth import token_required,decode_token
 from microservice_utils.settings import logger
 from flask_app.services.models import KafkaPayload
-import uuid
 
-ns_mobile = Namespace("mobile", "APIs related to mobile")
+ns_mobile = ApiNamespace("mobile", "APIs related to mobile")
 request_model = RequestModel(ns_mobile)
 response_model = ResponseModel(ns_mobile)
 
-ns_operator = Namespace("operator", "APIs related to operator")
+ns_operator = ApiNamespace("operator", "APIs related to operator")
 request_model = RequestModel(ns_operator)
 response_model = ResponseModel(ns_operator)
 
-ns_kafka = Namespace("mimic_kafka", "APIs related to mimic kafka")
+ns_kafka = ApiNamespace("mimic_kafka", "APIs related to mimic kafka")
 request_model = RequestModel(ns_kafka)
 response_model = ResponseModel(ns_kafka)
 

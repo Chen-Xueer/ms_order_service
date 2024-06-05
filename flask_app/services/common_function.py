@@ -2,6 +2,7 @@ from microservice_utils.settings import logger
 import boto3
 import json
 from flask_app.database_sessions import Database
+from sqlalchemy_.ms_order_service.enum_types import ReturnActionStatus, ReturnStatus
 from sqlalchemy_.ms_order_service.order import Order
 from sqlalchemy_.ms_order_service.transaction import Transaction
 from sqlalchemy_.ms_order_service.tenant import Tenant
@@ -46,11 +47,11 @@ class DataValidation:
             return {field_name: f"{field_name} is required and must be date"}
         return {}
     
-    def validate_tenants(self,tenant_id):
+    def validate_tenants(self,tenant_id,action):
         tenant_exists  = self.session.query(Tenant).filter(Tenant.tenant == tenant_id).first()
         if tenant_exists is None:
             # kafka out check validity of tenant with tenant management service
-            return None
+            return {"message": "tenant_exists not found", "action":action,"action_status":ReturnActionStatus.FAILED.value,"status": ReturnStatus.ERROR.value},404
         return tenant_exists
     
     def validate_order(self,transaction_id):

@@ -8,3 +8,5 @@ omit =
     resource/*
     sqlalchemy_/*
     main.py
+    test.py
+    example*.py

@@ -3,6 +3,7 @@ from unittest.mock import patch, MagicMock
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
+from sqlalchemy_.ms_order_service.enum_types import ReturnActionStatus, ReturnStatus
 from sqlalchemy_.ms_order_service.tenant import Tenant
 from flask_app.services.common_function import DataValidation
 
@@ -46,10 +47,10 @@ def test_validate_tenants():
     # Test when tenant exists
     mock_tenant = Tenant()
     data_validation.session.query.return_value.filter.return_value.first.return_value = mock_tenant
-    assert data_validation.validate_tenants("valid_tenant_id") == mock_tenant
+    assert data_validation.validate_tenants(tenant_id="valid_tenant_id",action='test') == mock_tenant
     # Test when tenant does not exist
     data_validation.session.query.return_value.filter.return_value.first.return_value = None
-    assert data_validation.validate_tenants("invalid_tenant_id") is None
+    assert data_validation.validate_tenants(tenant_id="invalid_tenant_id",action='test') == ({"message": "tenant_exists not found", "action":'test',"action_status":ReturnActionStatus.FAILED.value,"status": ReturnStatus.ERROR.value},404)
 
 
 def test_validate_order():

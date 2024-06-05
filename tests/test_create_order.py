@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 from flask_app.services.models import KafkaPayload
+from sqlalchemy_.ms_order_service.tenant import Tenant
 from sqlalchemy_.ms_order_service.transaction import Transaction
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from flask_app.services.create_order import CreateOrder, kafka_send
@@ -71,12 +72,15 @@ def test_db_insert_transaction(mock_logger):
     assert status_code == 500
     assert result["message"] == "insert transaction failed"
     assert result["action"] == "transaction_creation"
-    
+
+@patch('flask_app.services.create_order.DataValidation.validate_tenants')
 @patch('flask_app.services.create_order.CreateOrder.db_insert_order', autospec=True)
 @patch('flask_app.services.create_order.CreateOrder.db_insert_transaction', autospec=True)
 @patch('flask_app.services.create_order.kafka_send', autospec=True)
-def test_create_order_mobile_id(mock_kafka_send, mock_db_insert_transaction, mock_db_insert_order):
+def test_create_order_mobile_id(mock_kafka_send, mock_db_insert_transaction, mock_db_insert_order,mock_validate_tenants):
     create_order = CreateOrder()
+
+    mock_validate_tenants.return_value = Tenant()
 
     # Mock the db_insert_order and db_insert_transaction methods
     mock_db_insert_order.return_value = Order()
@@ -118,13 +122,16 @@ def test_create_order_mobile_id(mock_kafka_send, mock_db_insert_transaction, moc
     assert result["action"] == "transaction_creation"
     assert result["action_status"] == 500
     assert result["status"] == 500
-    
+
+@patch('flask_app.services.create_order.DataValidation.validate_tenants', autospec=True)  
 @patch('flask_app.services.create_order.logger')
 @patch('flask_app.services.create_order.CreateOrder.db_insert_order', autospec=True)
 @patch('flask_app.services.create_order.CreateOrder.db_insert_transaction', autospec=True)
 @patch('flask_app.services.create_order.kafka_send', autospec=True)
-def test_create_order_rfid(mock_kafka_send, mock_db_insert_transaction, mock_db_insert_order, mock_logger):
+def test_create_order_rfid(mock_kafka_send, mock_db_insert_transaction, mock_db_insert_order, mock_logger,mock_validate_tenants):
     create_order = CreateOrder()
+
+    mock_validate_tenants.return_value = Tenant()
 
     # Mock the db_insert_order and db_insert_transaction methods
     mock_db_insert_order.return_value = Order()
