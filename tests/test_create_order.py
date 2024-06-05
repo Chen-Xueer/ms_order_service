@@ -116,7 +116,7 @@ def test_create_order_mobile_id(mock_kafka_send, mock_db_insert_transaction, moc
 
     # Test when transaction creation fails
     mock_db_insert_order.return_value = Order()
-    mock_db_insert_transaction.return_value = {"message": "insert transaction failed", "action":"transaction_creation","action_status":500,"status": 500}
+    mock_db_insert_transaction.return_value = ({"message": "insert transaction failed", "action":"transaction_creation","action_status":500,"status": 500})
     result = create_order.create_order_mobile_id(mobile_id, data, tenant_id)
     assert result["message"] == "insert transaction failed"
     assert result["action"] == "transaction_creation"
@@ -155,7 +155,7 @@ def test_create_order_rfid(mock_kafka_send, mock_db_insert_transaction, mock_db_
     mock_kafka_send.assert_called_once()
 
     # Test when order creation fails
-    mock_db_insert_order.return_value = {"message": "insert order failed", "action":"order_creation","action_status":500,"status": 500}
+    mock_db_insert_order.return_value = ({"message": "insert order failed", "action":"order_creation","action_status":500,"status": 500})
     result = create_order.create_order_rfid(data)
     assert result["message"] == "insert order failed"
     assert result["action"] == "order_creation"
@@ -166,7 +166,7 @@ def test_create_order_rfid(mock_kafka_send, mock_db_insert_transaction, mock_db_
     mock_db_insert_order.return_value = Order()
     mock_db_insert_transaction.return_value = {"message": "insert transaction failed", "action":"transaction_creation","action_status":500,"status": 500}
     result = create_order.create_order_rfid(data)
-    assert result["message"] == "insert transaction failed"
+    assert result["message"] == ("insert transaction failed")
     assert result["action"] == "transaction_creation"
     assert result["action_status"] == 500
     assert result["status"] == 500
