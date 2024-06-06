@@ -13,6 +13,11 @@ jobs:
     runs-on: self-hosted
     env: 
       MASTER_DB_SECRET_NAME: ${{ secrets.MASTER_DB_SECRET_NAME }}
+      MASTER_DB_NAME: ${{ secrets.MASTER_DB_NAME }}
+      MASTER_DB_PROXY: ${{ secrets.MASTER_DB_PROXY }}
+      KAFKA_BOOTSTRAP_SERVER: ${{ secrets.KAFKA_BOOTSTRAP_SERVER }}
+      KAFKA_SASL_USERNAME: ${{ secrets.KAFKA_SASL_USERNAME }}
+      KAFKA_SASL_PASSWORD: ${{ secrets.KAFKA_SASL_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
