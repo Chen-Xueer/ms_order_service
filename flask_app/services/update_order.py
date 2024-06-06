@@ -160,7 +160,7 @@ class UpdateOrder:
                             kafka_topic = MsCSMSManagement.RESERVATION_REQUEST.value
                             reservation_payload = ReservationPayload()
                             reservation_payload.meta.request_id = data.meta.request_id
-                            reservation_payload.action = 'ReserveNow'
+                            reservation_payload.meta.action = 'ReserveNow'
                             reservation_payload.meta.meta_type = data.meta.meta_type
                             reservation_payload.evse.charge_point_id = data.evse.charge_point_id
                             reservation_payload.evse.subprotocol = data.evse.subprotocol
@@ -177,7 +177,7 @@ class UpdateOrder:
                         kafka_topic = MsCSMSManagement.REMOTE_CONTROL_RESPONSE.value
                         start_transaction_payload = StartTransactionPayload()
                         start_transaction_payload.meta.request_id = data.meta.request_id
-                        start_transaction_payload.action = 'RemoteStartTransaction'
+                        start_transaction_payload.meta.action = 'RemoteStartTransaction'
                         start_transaction_payload.meta.meta_type = data.meta_type
                         start_transaction_payload.evse.charge_point_id = data.evse.charge_point_id
                         start_transaction_payload.evse.subprotocol = data.evse.subprotocol
