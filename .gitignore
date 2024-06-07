@@ -5,6 +5,7 @@ backup/
 
 # log files
 *.log
+.env
 .env.actual
 .env.testing
 
