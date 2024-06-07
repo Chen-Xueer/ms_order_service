@@ -13,5 +13,5 @@ kafka_app = KafkaApp(
     sasl_mechanism="SCRAM-SHA-512",
     sasl_username=os.environ.get("KAFKA_SASL_USERNAME"),
     sasl_password=os.environ.get("KAFKA_SASL_PASSWORD", ""),
-    _response_timeout=120
+    _router_response_timeout=60
 )

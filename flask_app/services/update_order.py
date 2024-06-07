@@ -178,7 +178,7 @@ class UpdateOrder:
                         start_transaction_payload = StartTransactionPayload()
                         start_transaction_payload.meta.request_id = data.meta.request_id
                         start_transaction_payload.meta.action = 'RemoteStartTransaction'
-                        start_transaction_payload.meta.meta_type = data.meta_type
+                        start_transaction_payload.meta.meta_type = data.meta.meta_type
                         start_transaction_payload.evse.charge_point_id = data.evse.charge_point_id
                         start_transaction_payload.evse.subprotocol = data.evse.subprotocol
                         start_transaction_payload.transaction_id = order_exist.transaction_id

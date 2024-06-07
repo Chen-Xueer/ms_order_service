@@ -134,9 +134,14 @@ class CreateOrder:
     
     def create_order_rfid(self,data:KafkaPayload):
         try:
+            logger.info(f">>>>>>>>>>>>>create_order_rfid>>>>>>>>>>>>>>")
+            logger.info(f"Data: {data}")
+
             tenant_exists = self.data_validation.validate_tenants(tenant_id=data.tenant_id,action=data.meta.meta_type)
-            if not isinstance(tenant_exists,Tenant):
-                return tenant_exists
+            #if not isinstance(tenant_exists,Tenant):
+            #    return tenant_exists
+            
+            logger.info(f"Tenant exists: {tenant_exists}")
         
             data.meta.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             data.meta.version = "1.0.0"

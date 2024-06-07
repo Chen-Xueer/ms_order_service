@@ -19,7 +19,14 @@ class KafkaMeta:
         self.request_id = kwargs.get("request_id")
     
     def to_dict(self):
-        return asdict(self)
+        return {
+            "timestamp": self.timestamp,
+            "version": self.version,
+            "type": self.meta_type,
+            "action": self.action,
+            "producer": self.producer,
+            "request_id": self.request_id
+        }
 
 @dataclass(init=False)
 class KafkaEVSE:

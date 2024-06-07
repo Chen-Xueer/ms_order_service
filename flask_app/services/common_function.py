@@ -48,6 +48,7 @@ class DataValidation:
         return {}
     
     def validate_tenants(self,tenant_id,action):
+
         tenant_exists  = self.session.query(Tenant).filter(Tenant.tenant == tenant_id).first()
         if tenant_exists is None:
             # kafka out check validity of tenant with tenant management service

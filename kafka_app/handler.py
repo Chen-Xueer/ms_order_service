@@ -27,12 +27,14 @@ def handler(message: KafkaMessage):
             update_order = UpdateOrder()   
             update_order.update_order(data = data)
         
-        if message.topic == MsOrderManagement.CreateOrder.value:
+        if message.topic == MsOrderManagement.CREATE_ORDER.value:
             from flask_app.services.create_order import CreateOrder
+            logger.info(">>>>>>>Creating Order:>>>>>>>")
+            logger.info(f"{data}")
             create_order = CreateOrder()
             create_order.create_order_rfid(data = KafkaPayload(**data))
         
-        if message.topic == MsOrderManagement.RejectOrder.value:
+        if message.topic == MsOrderManagement.REJECT_ORDER.value:
             update_order = UpdateOrder()   
             update_order.update_order(data = KafkaPayload(**data),cancel_ind = True)
             
