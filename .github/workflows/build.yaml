@@ -20,12 +20,8 @@ jobs:
       KAFKA_BOOTSTRAP_SERVER: ${{ secrets.KAFKA_BOOTSTRAP_SERVER }}
       KAFKA_SASL_USERNAME: ${{ secrets.KAFKA_SASL_USERNAME }}
       KAFKA_SASL_PASSWORD: ${{ secrets.KAFKA_SASL_PASSWORD }}
-    container:
-      image: python:3.10-slim-buster
     steps:
       - uses: actions/checkout@v4
-
-      
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
