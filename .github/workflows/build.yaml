@@ -12,9 +12,11 @@ jobs:
   unit_test:
     runs-on: self-hosted
     env: 
-      MASTER_DB_SECRET_NAME: ${{ secrets.MASTER_DB_SECRET_NAME }}
       MASTER_DB_NAME: ${{ secrets.MASTER_DB_NAME }}
       MASTER_DB_PROXY: ${{ secrets.MASTER_DB_PROXY }}
+      MASTER_DB_USERNAME: ${{ secrets.MASTER_DB_USERNAME }}
+      MASTER_DB_PASSWORD: ${{ secrets.MASTER_DB_PASSWORD }}
+      MASTER_DB_PORT: ${{ secrets.MASTER_DB_PORT }}
       KAFKA_BOOTSTRAP_SERVER: ${{ secrets.KAFKA_BOOTSTRAP_SERVER }}
       KAFKA_SASL_USERNAME: ${{ secrets.KAFKA_SASL_USERNAME }}
       KAFKA_SASL_PASSWORD: ${{ secrets.KAFKA_SASL_PASSWORD }}

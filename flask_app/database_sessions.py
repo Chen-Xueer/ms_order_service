@@ -22,7 +22,7 @@ class Database:
     def __init__(self):
         #self.local_postgres = os.getenv('LOCAL_POSTGRES')
         self.region = os.getenv('AWS_REGION', "ap-southeast-1")
-        self.master_db_secret_name = os.getenv('MASTER_DB_SECRET_NAME')
+        #self.master_db_secret_name = os.getenv('MASTER_DB_SECRET_NAME')
         self.master_db_proxy = os.getenv('MASTER_DB_PROXY')
         self.master_db_name = os.getenv('MASTER_DB_NAME')
         self.secrets_client = boto3.client("secretsmanager", region_name=self.region)
@@ -37,12 +37,18 @@ class Database:
             db_name = self.master_db_name
             db_url: URL = make_url(f"postgresql://***:***@{db_proxy_endpoint}:5432/{db_name}?sslmode=require")
 
-            secrets = self._get_db_secrets()
+            #secrets = self._get_db_secrets()
+            #db_url = db_url._replace(
+            #        username=secrets["username"],
+            #        password=secrets["password"],
+            #        port=secrets["port"],
+            #    )
+            
             db_url = db_url._replace(
-                    username=secrets["username"],
-                    password=secrets["password"],
-                    port=secrets["port"],
-                )
+                    username=os.getenv('MASTER_DB_USERNAME'),
+                    password=os.getenv('MASTER_DB_PASSWORD'),
+                    port=os.getenv('MASTER_DB_PORT'),
+            )
 
             return db_url.render_as_string(hide_password=False)
 

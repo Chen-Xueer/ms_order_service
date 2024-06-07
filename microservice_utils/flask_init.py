@@ -35,11 +35,11 @@ def flask_restx_init(
     #def setup_session():
     #    db.init_session()  # get the session for the current thread
 
-    @app.teardown_request
-    def teardown_session(exception=None):
-        if exception:
-            db.rollback_session()  # rollback the transaction in case of error
-        db.remove_session()  # remove the session for the current thread
+    #@app.teardown_request
+    #def teardown_session(exception=None):
+    #    if exception:
+    #        db.rollback_session()  # rollback the transaction in case of error
+    #    db.remove_session()  # remove the session for the current thread
 
     # Load configuration from Config class
     app.config.from_object(Config)

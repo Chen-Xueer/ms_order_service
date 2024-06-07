@@ -1,0 +1,203 @@
+name: Unit Test & SonarQube & Docker
+on:
+  # pull_request:
+  push:
+    #Triggered by push to master branch
+    branches:
+      - master
+      - "releases/**"
+      - "releases/**/*"
+
+env:
+  ECR_IMAGE_TAG: 20240606B
+  SERVICE_NAME: oneems-charger-management
+
+jobs:
+  #first job run unit test
+  unit_test:
+    runs-on: [self-hosted, shiying]
+    container:
+      image: python:3.10.12
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.TEST_ENV_AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.TEST_ENV_AWS_SECRET_ACCESS_KEY }}
+    steps:
+      #checkout
+      - uses: actions/checkout@v4
+      #setup python
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10.12"
+          # cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install awscli
+
+      - name: Unit test
+        run: |
+          pip install -r requirements.txt --force-reinstall
+          pip install coverage
+          coverage run -m unittest discover
+          coverage report
+          coverage xml
+
+      #upload coverage report
+      - uses: actions/upload-artifact@v4
+        with:
+          name: $SERVICE_NAME-coverage-report
+          path: coverage.xml
+          retention-days: 1
+      #Send notifications through the teams chanel
+      - name: Notify Successful
+        if: ${{ success() }}
+        uses: jdcargile/ms-teams-notification@v1.4
+        with:
+          github-token: ${{ github.token }} # this will use the runner's token.
+          ms-teams-webhook-uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
+          notification-summary: ${{ format('Successful | {0}:{1} | job:{2}', github.event_name, github.ref_name, github.job) }}
+          notification-color: 28A745
+          timezone: Asia/Singapore
+          verbose-logging: false
+      - name: Notify Failure
+        if: ${{ failure() }}
+        uses: jdcargile/ms-teams-notification@v1.4
+        with:
+          github-token: ${{ github.token }} # this will use the runner's token.
+          ms-teams-webhook-uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
+          notification-summary: ${{ format('Failure | {0}:{1} | job:{2}', github.event_name, github.ref_name, github.job) }}
+          notification-color: DC3545
+          timezone: Asia/Singapore
+          verbose-logging: false
+      - name: Notify Cancelled
+        if: ${{ cancelled() }}
+        uses: jdcargile/ms-teams-notification@v1.4
+        with:
+          github-token: ${{ github.token }} # this will use the runner's token.
+          ms-teams-webhook-uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
+          notification-summary: ${{ format('Cancelled | {0}:{1} | job:{2}', github.event_name, github.ref_name, github.job) }}
+          notification-color: FFC107
+          timezone: Asia/Singapore
+          verbose-logging: false
+
+  #the second job is sonarqube
+  sonarqube:
+    #must run unit test first
+    needs: [unit_test]
+    runs-on: [self-hosted, shiying]
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Disabling shallow clones is recommended for improving the relevancy of reporting
+          fetch-depth: 0
+      #download unit test coverage report
+      - uses: actions/download-artifact@v4
+        with:
+          #the name must be the same as uploaded
+          name: $SERVICE_NAME-coverage-report
+          path: .
+      #run sonarqube
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          # SONAR_ROOT_CERT: ${{ secrets.SONAR_ROOT_CERT }}
+        with:
+          projectBaseDir: .
+
+          # Dockerfile, .github/**, .gitignore, .git/**, .vscode/**, .idea/**, **/*.pyc, **/__pycache__/**, **/tests/**, **/test_*.py, **/test.py, **/test_*.py, **/test.py
+
+          args: >
+            -Dsonar.projectKey=$SERVICE_NAME
+            -Dsonar.python.version=3.10
+            -Dsonar.python.coverage.reportPaths=coverage.xml
+            -Dsonar.scm.provider=git
+            -Dsonar.exclusions=coverage.xml
+
+      # Check the Quality Gate status.
+      - name: SonarQube Quality Gate check
+        id: sonarqube-quality-gate-check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        # Force to fail step after specific time.
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          # SONAR_ROOT_CERT: ${{ secrets.SONAR_ROOT_CERT }}
+
+  #the third job is docker
+  docker:
+    #must run sonarqube first
+    needs: [sonarqube]
+    runs-on: [self-hosted, shiying]
+
+    container:
+      image: python:3.10.12
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.TEST_ENV_AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.TEST_ENV_AWS_SECRET_ACCESS_KEY }}
+
+    permissions:
+      id-token: write
+      contents: read
+
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      #setup python
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10.12"
+          # cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install awscli
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          inline-session-policy: >-
+            {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "AllowPush",
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:BatchCheckLayerAvailability",
+                    "ecr:CompleteLayerUpload",
+                    "ecr:InitiateLayerUpload",
+                    "ecr:PutImage",
+                    "ecr:UploadLayerPart"
+                  ],
+                  "Resource": "arn:aws:ecr:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:repository/$SERVICE_NAME"
+                }
+              ]
+            }
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registries: ${{ secrets.AWS_ACCOUNT_ID }}
+          mask-password: "false"
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-publish
+        shell: bash
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+
+        run: |
+          docker build --no-cache --progress=plain -t "$ECR_REGISTRY/$SERVICE_NAME:$ECR_IMAGE_TAG" .
+          docker push "$ECR_REGISTRY/$SERVICE_NAME:$ECR_IMAGE_TAG"
+          echo "IMAGE $ECR_IMAGE_TAG is pushed to $ECR_REGISTRY/$SERVICE_NAME"
+          echo "image_tag=$ECR_IMAGE_TAG" 
+          echo "full_image=$ECR_REGISTRY/$SERVICE_NAME:$ECR_IMAGE_TAG"
