@@ -10,6 +10,7 @@ from sqlalchemy_.ms_order_service.order import Order
 from sqlalchemy_.ms_order_service.transaction import Transaction
 from typing import Tuple
 from datetime import datetime, timedelta
+from flask_app.services.common_function import kafka_out
 
 class UpdateOrder:
     def __init__(self):
@@ -203,18 +204,6 @@ class UpdateOrder:
         finally:
             self.session.close()
 
-def kafka_out(topic: str, data: dict, request_id: str):
-    from kafka_app.main import kafka_app
 
-    logger.info("###################")
-    logger.info(f"KAFKA OUT: {data}")
-
-    kafka_app.send(
-        topic=Topic(
-            name=topic,
-            data=data,
-        ),
-        request_id=request_id
-    )
 
 

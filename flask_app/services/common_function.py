@@ -47,6 +47,21 @@ class DataValidation:
             return {field_name: f"{field_name} is required and must be date"}
         return {}
     
+    def validate_null(self,value, field_name):
+        logger.info(f"field_name: {value}")
+        if value is None:
+            return {"error_description": {field_name: f"{field_name} is required"}, "status_code": 400}
+        return {}
+    
+    def validate_transaction_id(self,transaction_id,trigger_method):
+        logger.info(f"transaction_id: {transaction_id}")
+        if transaction_id is None and trigger_method != "authorize":
+            return {"error_description": {"transaction_id": "transaction_id is required"}, "status_code": 404}
+        transaction_exists  = self.session.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
+        if transaction_exists is None:
+            return {"error_description": {"transaction_id": "transaction_id not found"}, "status_code": 404}
+        return {}
+        
     def validate_tenants(self,tenant_id,action):
 
         tenant_exists  = self.session.query(Tenant).filter(Tenant.tenant == tenant_id).first()
@@ -73,4 +88,23 @@ class DataValidation:
             return None
         return transaction_exists
 
+
+
+
+def kafka_out(topic: str, data: dict, request_id: str):
+    from kafka_app.main import kafka_app
+    from kafka_app.kafka_management.kafka_topic import Topic
+    logger.info("###################")
+    logger.info(f"KAFKA OUT: {data}")
+
+    try:
+        kafka_app.send(
+            topic=Topic(
+                name=topic,
+                data=data,
+            ),
+            request_id=request_id
+        )
+    except Exception as e:
+        print(f"Error publishing message to Kafka broker: {e}")
 

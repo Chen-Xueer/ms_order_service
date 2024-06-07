@@ -10,6 +10,7 @@ from sqlalchemy_.ms_order_service.tenant import Tenant
 from sqlalchemy_.ms_order_service.transaction import Transaction
 from typing import Tuple
 from datetime import datetime
+from flask_app.services.common_function import kafka_out
 
 class CreateOrder:
     def __init__(self):
@@ -80,9 +81,10 @@ class CreateOrder:
 
     def create_order_mobile_id(self,mobile_id,data:KafkaPayload,tenant_id):
         try:
-            tenant_exists = self.data_validation.validate_tenants(tenant_id=tenant_id,action=data.meta.meta_type)
-            if not isinstance(tenant_exists,Tenant):
-                return tenant_exists
+            #tenant_exists = self.data_validation.validate_tenants(tenant_id=tenant_id,action=data.meta.meta_type)
+            #if not isinstance(tenant_exists,Tenant):
+            #    return tenant_exists
+            #logger.info(f"Tenant exists: {tenant_exists}")
             
             data.meta.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             data.meta.version = "1.0.0"
@@ -122,7 +124,7 @@ class CreateOrder:
                 data.tenant_id = tenant_id
                 data.status_code = 201
                 
-                kafka_send(topic=MsEvDriverManagement.DRIVER_VERIFICATION_REQUEST.value,data=data.to_dict(),request_id=data.meta.request_id)
+                kafka_out(topic=MsEvDriverManagement.DRIVER_VERIFICATION_REQUEST.value,data=data.to_dict(),request_id=data.meta.request_id)
             
                 return data.to_dict()
         except Exception as e:
@@ -134,14 +136,10 @@ class CreateOrder:
     
     def create_order_rfid(self,data:KafkaPayload):
         try:
-            logger.info(f">>>>>>>>>>>>>create_order_rfid>>>>>>>>>>>>>>")
-            logger.info(f"Data: {data}")
-
-            tenant_exists = self.data_validation.validate_tenants(tenant_id=data.tenant_id,action=data.meta.meta_type)
+            #tenant_exists = self.data_validation.validate_tenants(tenant_id=data.tenant_id,action=data.meta.meta_type)
             #if not isinstance(tenant_exists,Tenant):
             #    return tenant_exists
-            
-            logger.info(f"Tenant exists: {tenant_exists}")
+            #logger.info(f"Tenant exists: {tenant_exists}")
         
             data.meta.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             data.meta.version = "1.0.0"
@@ -182,7 +180,7 @@ class CreateOrder:
                 data.requires_payment = order_created.requires_payment
                 data.status_code = 201
 
-                kafka_send(topic=MsEvDriverManagement.DRIVER_VERIFICATION_REQUEST.value,data=data.to_dict(),request_id=data.meta.request_id)
+                kafka_out(topic=MsEvDriverManagement.DRIVER_VERIFICATION_REQUEST.value,data=data.to_dict(),request_id=data.meta.request_id)
             
                 return data.to_dict()
         except Exception as e:
@@ -192,16 +190,3 @@ class CreateOrder:
         finally:
             self.session.close()
     
-def kafka_send(topic: str, data: dict, request_id: str):
-    from kafka_app.main import kafka_app
-    from kafka_app.kafka_management.kafka_topic import Topic
-    try:
-        kafka_app.send(
-            topic=Topic(
-                name=topic,
-                data=data,
-            ),
-            request_id=request_id
-        )
-    except Exception as e:
-        print(f"Error publishing message to Kafka broker: {e}")

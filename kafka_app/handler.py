@@ -1,19 +1,19 @@
 import json
+from flask_app.services.common_function import DataValidation
 from microservice_utils.settings import logger
 from kafka_app.kafka_management.topic_enum import MsOrderManagement, MsEvDriverManagement,MsPaymentManagement,MsCSMSManagement
 from flask_app.services.models import KafkaPayload
-from kafka_app.kafka_management.kafka_topic import Topic,KafkaMessage
+from kafka_app.kafka_management.kafka_topic import KafkaMessage
 from flask_app.database_sessions import Database
-from flask_app.services.update_order import UpdateOrder
+from flask_app.services.update_order import UpdateOrder 
 from kafka_app.kafka_management.kafka_app import non_blocking
-
-database= Database()
-session=database.init_session()
-logger.info("Database Initialized")
-
 
 def handler(message: KafkaMessage):
     try:
+        database= Database()
+        session=database.init_session()
+        logger.info("Database Initialized")
+
         logger.info(
             f"Handling message: {message.key} {message.topic} {message.headers} {json.dumps(message.payload)}"
         )
@@ -29,8 +29,6 @@ def handler(message: KafkaMessage):
         
         if message.topic == MsOrderManagement.CREATE_ORDER.value:
             from flask_app.services.create_order import CreateOrder
-            logger.info(">>>>>>>Creating Order:>>>>>>>")
-            logger.info(f"{data}")
             create_order = CreateOrder()
             create_order.create_order_rfid(data = KafkaPayload(**data))
         
@@ -62,8 +60,10 @@ def handler(message: KafkaMessage):
 
 
 def validate_request(message: KafkaMessage):
-    validate = {"error_description":{}}
+    data_validate = DataValidation()
+    validate = {}
 
+    logger.info(f"topic: {message.topic}")
     if message.topic not in [
         MsOrderManagement.CREATE_ORDER.value,
         MsEvDriverManagement.DRIVER_VERIFICATION_RESPONSE.value,
@@ -73,43 +73,30 @@ def validate_request(message: KafkaMessage):
         MsOrderManagement.STOP_TRANSACTION.value
     ]:
         logger.info("Action Not Implemented")
-        validate["error_description"]["action"] = "Action Not Implemented"
-        validate["status_code"] = 404
+        validate.update({"error_description": {"action": "Action Not Implemented"}, "status_code": 404})
+
+    trigger_method = message.payload.get("data").get("trigger_method")
+    validate.update(data_validate.validate_null(value=trigger_method,field_name="trigger_method"))
+
+    transaction_id = message.payload.get("data").get("transaction_id")
+    validate.update(data_validate.validate_transaction_id(transaction_id=transaction_id,trigger_method=trigger_method))
     
-    #transaction_id = message.payload.get("data").get("transaction_id")
-    #logger.info(f"transaction_id: {transaction_id}")
-    #if transaction_id is None:
-    #    validate["error_description"]["transaction_id"] = "transaction_id is required"
-    #    validate["status"] = 400
-    #
     request_id = message.payload.get("meta").get("request_id")
-    logger.info(f"request_id: {request_id}")
-    if request_id is None:
-        validate["error_description"]["request_id"] = "request_id is required"
-        validate["status"] = 400
+    validate.update(data_validate.validate_null(value=request_id,field_name="request_id"))
     
-    #trigger_method = message.payload.get("data").get("trigger_method")
-    #logger.info(f"trigger_method: {trigger_method}")
-    #if trigger_method is None:
-    #    validate["error_description"]["trigger_method"] = "trigger_method is required"
-    #    validate["status"] = 400
-    
-    #payment_required = message.payload.get("data").get("payment_required")
-    #logger.info(f"payment_required: {payment_required}")
-    #if payment_required is None:
-    #    message.payload["data"]["payment_required"] = False
+    payment_required = message.payload.get("data").get("payment_required")
+    validate.update(data_validate.validate_null(value=payment_required,field_name="payment_required"))
 
-    #id_tag = message.payload.get("data").get("id_tag")
-    #logger.info(f"id_tag: {id_tag}")
-    #mobile_id = message.payload.get("data").get("cognito_user_id")
-    #logger.info(f"mobile_id: {mobile_id}")
+    id_tag = message.payload.get("data").get("id_tag")
+    logger.info(f"id_tag: {id_tag}")
+    mobile_id = message.payload.get("data").get("cognito_user_id")
+    logger.info(f"mobile_id: {mobile_id}")
 
-    #if id_tag is None and mobile_id is None:
-    #    validate["error_description"]["id_tag"] = "rfid or mobile_id is required"
-    #    validate["status"] = 400
+    if id_tag is None and mobile_id is None:
+        validate.update({"error_description": {"id_tag": "rfid or mobile_id is required"}, "status": 400})
 
     logger.info(f"validate: {validate}")
-    if len(validate["error_description"]) > 0:
+    if len(validate.get("error_description")) > 0:
         logger.error("Validation Failed")
         return False,validate
     
@@ -119,13 +106,3 @@ def validate_request(message: KafkaMessage):
 
 
 
-
-def kafka_out(topic: str, data: dict, request_id: str):
-    from kafka_app.main import kafka_app
-    kafka_app.send(
-        topic=Topic(
-            name=topic,
-            data=data,
-        ),
-        request_id=request_id
-    )

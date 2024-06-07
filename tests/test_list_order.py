@@ -2,21 +2,9 @@ import pytest
 from unittest.mock import ANY, Mock,MagicMock, patch
 import sys
 from pathlib import Path
-from sqlalchemy.orm import Session
-from flask_app.services.models import KafkaPayload
-from sqlalchemy import case, func
-from sqlalchemy.sql.functions import coalesce
 from sqlalchemy_.ms_order_service.tenant import Tenant
-from sqlalchemy_.ms_order_service.transaction import Transaction
 sys.path.append(str(Path(__file__).resolve().parent.parent))
-from flask_app.services.update_order import UpdateOrder, kafka_out
-from sqlalchemy_.ms_order_service.order import Order
 from flask_app.services.list_order import ListOrder
-from sqlalchemy_.ms_order_service.transaction import Transaction
-from flask_app.services.common_function import DataValidation
-from sqlalchemy_.ms_order_service.enum_types import OrderStatus, ReturnActionStatus, ReturnStatus,TriggerMethod
-from kafka_app.kafka_management.topic_enum import MsCSMSManagement,MsEVSEManagement,MsPaymentManagement,MsOrderManagement
-from datetime import datetime
 
 @patch('flask_app.services.list_order.DataValidation')
 @patch('flask_app.services.list_order.Database')
