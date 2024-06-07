@@ -79,6 +79,7 @@ jobs:
       #  with:
       #    username: ${{ secrets.DOCKERHUB_USERNAME }}
       #    password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
       - uses: actions/checkout@v4
         with:
           # Disabling shallow clones is recommended for improving the relevancy of reporting
@@ -87,6 +88,8 @@ jobs:
         with:
           name: coverage-${{ github.sha }}
           path: .
+      - name: Clear SonarQube cache
+        run: rm -rf /opt/sonar-scanner/.sonar/cache
       - uses: SonarSource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
