@@ -2,11 +2,12 @@ import json
 from flask_app.services.common_function import DataValidation
 from microservice_utils.settings import logger
 from kafka_app.kafka_management.topic_enum import MsOrderManagement, MsEvDriverManagement,MsPaymentManagement,MsCSMSManagement
-from flask_app.services.models import KafkaPayload
+from flask_app.services.models import CreateOrderPayloadAuthorize, CreateOrderPayloadStartTransaction, KafkaPayload
 from kafka_app.kafka_management.kafka_topic import KafkaMessage
 from flask_app.database_sessions import Database
 from flask_app.services.update_order import UpdateOrder 
 from kafka_app.kafka_management.kafka_app import non_blocking
+from sqlalchemy_.ms_order_service.enum_types import TriggerMethod
 
 def handler(message: KafkaMessage):
     try:
@@ -19,18 +20,25 @@ def handler(message: KafkaMessage):
         )
 
         validate_result,validate = validate_request(message)
+        logger.info(f"validate_result: {validate}")
 
         data = message.payload
 
-        if not validate_result:
-            data = data["data"].update(validate)
+        if validate_result != None:
+            data["data"].update(validate)
             update_order = UpdateOrder()   
-            update_order.update_order(data = data)
+            update_order.update_order(data = KafkaPayload(**data),cancel_ind = True)
         
         if message.topic == MsOrderManagement.CREATE_ORDER.value:
             from flask_app.services.create_order import CreateOrder
             create_order = CreateOrder()
-            create_order.create_order_rfid(data = KafkaPayload(**data))
+            #if data.get("data").get("trigger_method") == TriggerMethod.AUTHORIZE.value:
+            #    data = CreateOrderPayloadAuthorize(**data)
+            #if data.get("data").get("trigger_method") == TriggerMethod.START_TRANSACTION.value:
+            #    data = CreateOrderPayloadStartTransaction(**data)
+            
+            data = KafkaPayload(**data.to_dict())
+            create_order.create_order_rfid(data = data)
         
         if message.topic == MsOrderManagement.REJECT_ORDER.value:
             update_order = UpdateOrder()   
@@ -85,18 +93,19 @@ def validate_request(message: KafkaMessage):
     validate.update(data_validate.validate_null(value=request_id,field_name="request_id"))
     
     payment_required = message.payload.get("data").get("payment_required")
-    validate.update(data_validate.validate_null(value=payment_required,field_name="payment_required"))
+    #validate.update(data_validate.validate_null(value=payment_required,field_name="payment_required"))
 
+    
     id_tag = message.payload.get("data").get("id_tag")
     logger.info(f"id_tag: {id_tag}")
-    mobile_id = message.payload.get("data").get("cognito_user_id")
+    mobile_id = message.payload.get("data").get("mobile_id")
     logger.info(f"mobile_id: {mobile_id}")
 
     if id_tag is None and mobile_id is None:
         validate.update({"error_description": {"id_tag": "rfid or mobile_id is required"}, "status": 400})
 
     logger.info(f"validate: {validate}")
-    if len(validate.get("error_description")) > 0:
+    if len(validate) > 0:
         logger.error("Validation Failed")
         return False,validate
     

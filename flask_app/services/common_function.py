@@ -2,7 +2,7 @@ from microservice_utils.settings import logger
 import boto3
 import json
 from flask_app.database_sessions import Database
-from sqlalchemy_.ms_order_service.enum_types import ReturnActionStatus, ReturnStatus
+from sqlalchemy_.ms_order_service.enum_types import ReturnActionStatus, ReturnStatus, TriggerMethod
 from sqlalchemy_.ms_order_service.order import Order
 from sqlalchemy_.ms_order_service.transaction import Transaction
 from sqlalchemy_.ms_order_service.tenant import Tenant
@@ -48,19 +48,21 @@ class DataValidation:
         return {}
     
     def validate_null(self,value, field_name):
-        logger.info(f"field_name: {value}")
+        logger.info(f"{field_name}: {value}")
         if value is None:
             return {"error_description": {field_name: f"{field_name} is required"}, "status_code": 400}
         return {}
     
     def validate_transaction_id(self,transaction_id,trigger_method):
         logger.info(f"transaction_id: {transaction_id}")
-        if transaction_id is None and trigger_method != "authorize":
-            return {"error_description": {"transaction_id": "transaction_id is required"}, "status_code": 404}
-        transaction_exists  = self.session.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
-        if transaction_exists is None:
-            return {"error_description": {"transaction_id": "transaction_id not found"}, "status_code": 404}
-        return {}
+        if trigger_method in (TriggerMethod.AUTHORIZE.value,TriggerMethod.START_TRANSACTION.value):
+            return {}
+        else:
+            if transaction_id is None:
+                return {"error_description": {"transaction_id": "transaction_id is required"}, "status_code": 404}
+            transaction_exists  = self.session.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
+            if transaction_exists is None:
+                return {"error_description": {"transaction_id": "transaction_id not found"}, "status_code": 404}
         
     def validate_tenants(self,tenant_id,action):
 

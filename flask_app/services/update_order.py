@@ -142,7 +142,7 @@ class UpdateOrder:
                         elif data.trigger_method in (TriggerMethod.REMOTE_START.value,TriggerMethod.START_TRANSACTION.value):
                             data.meta.meta_type = "RemoteStopTransaction"
                         data.trigger_method = TriggerMethod.CANCEL_ORDER.value
-                        kafka_out(topic= MsOrderManagement.REJECT_ORDER.value,data=data.to_dict(),request_id=data.request_id)
+                        kafka_out(topic= MsOrderManagement.REJECT_ORDER.value,data=data.to_dict(),request_id=data.meta.request_id)
                     logger.info(f"Kafka topic: {kafka_topic}")
                 elif data.trigger_method == TriggerMethod.REMOTE_START.value:
                     if data.meta.producer == ProducerTypes.EVSE_AS_SERVICE.value:

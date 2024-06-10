@@ -130,14 +130,8 @@ class RequestModel:
         })
 
         data_model=self.namespace.model('data_create_order_rfid',{
-            "connector_id": fields.Integer(description="connector_id", required=False,default=1),
             "id_tag": fields.String(description="id_tag", required=False,default="MUserA"),
-            "meter_start": fields.Integer(description="meter_start", required=False,default=1000),
-            "timestamp": fields.String(description="timestamp", required=False,default="2021-09-01 00:00:00"),
-            "reservation_id": fields.Integer(description="reservation_id", required=False,default=0),
             "trigger_method": fields.String(description="trigger_method", required=False,default="authorize"),
-            "start_time": fields.String(description="start_time", required=False,default="2021-09-01 00:00:00"),
-            "requires_payment": fields.Boolean(description="payment_required", required=False,default=False),
         })
 
         data_models = {

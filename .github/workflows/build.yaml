@@ -10,7 +10,7 @@ on:
 
 jobs:
   unit_test:
-    runs-on: self-hosted
+    runs-on: [self-hosted, roy]
     env: 
       MASTER_DB_NAME: ${{ secrets.MASTER_DB_NAME }}
       MASTER_DB_PROXY: ${{ secrets.MASTER_DB_PROXY }}
@@ -71,7 +71,7 @@ jobs:
 
   sonarqube:
     needs: [unit_test]
-    runs-on: self-hosted
+    runs-on: [self-hosted, roy]
     if: ${{ github.event_name == 'push' }}
     steps:
       #- name: Login to DockerHub
