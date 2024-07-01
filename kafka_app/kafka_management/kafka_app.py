@@ -49,10 +49,10 @@ class KafkaApp:
         if sasl_username is not None or sasl_password is not None:
             basic_config = {
                 "bootstrap.servers": brokers,
-                #"sasl.mechanisms": sasl_mechanism,
-                #"security.protocol": security_protocol,
-                #"sasl.username": sasl_username,
-                #"sasl.password": sasl_password,
+                "sasl.mechanisms": sasl_mechanism,
+                "security.protocol": security_protocol,
+                "sasl.username": sasl_username,
+                "sasl.password": sasl_password,
             }
         # Admin
         self.admin_client = AdminClient(basic_config)

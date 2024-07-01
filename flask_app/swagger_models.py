@@ -14,7 +14,7 @@ class ResponseModel:
         return self.namespace.model("CreateOrderResponseModel", data_models)
     
     def list_order(self):
-        order_details=self.namespace.model('meta_create_order',{
+        order_details=self.namespace.model('data_list_order',{
             "transaction_id": fields.Integer(description="transaction_id", required=False),
             "status": fields.String(description="status", required=False),
             "charge_point_id": fields.String(description="charge_point_id", required=False),
@@ -30,13 +30,28 @@ class ResponseModel:
             "charged_energy": fields.Float(description="charged_energy", required=False),
             "amount": fields.Float(description="amount", required=False),
             "transaction_detail": fields.String(description="transaction_detail", required=False),
-            "total_amount": fields.Float(description="amount", required=False),
-            "transaction_status": fields.String(description="transaction_status", required=False),
-            "count": fields.Integer(description="count", required=False),
+            "total_cost": fields.Float(description="amount", required=False),
+            "driver": fields.String(description="driver", required=False),
+            "email": fields.String(description="email", required=False),
+            "start": fields.DateTime(description="start_time", required=False),
+            "stop": fields.DateTime(description="stop", required=False),
+            "site_name": fields.String(description="site", required=False),
+            "device_name": fields.String(description="device", required=False),        
+        })
+
+        error_model = self.namespace.model('error', {
+            "mobile_id": fields.String(required=False, description="mobile_id"),
+            "email": fields.String(required=False, description="email"),
         })
 
         data_models = {
-            "data": fields.Nested(order_details,description="meta", required=False,skip_none=True),
+            "data": fields.Nested(order_details, description="Response", required=False,skip_none=True),
+            "action": fields.String(required=True, description="action"),
+            "action_status": fields.String(required=True, description="action_status"),
+            "request_id": fields.String(required=True, description="request_id"),
+            "status": fields.String(required=True, description="status"),
+            "message": fields.String(required=False, description="message"),
+            "errors": fields.Nested(error_model, description="error", required=False,skip_none=True),
         }
 
         return self.namespace.model("ListOrderResponseModel", data_models)
@@ -47,11 +62,11 @@ class RequestModel:
     
     def create_order_mobile(self):
         meta_model=self.namespace.model('meta_create_order',{
-            "request_id": fields.String(description="request_id", required=False,default="req-MUserA-1"),
             "timestamp": fields.String(description="timestamp", required=False,default="2021-09-01 00:00:00"),
             "producer": fields.String(description="producer", required=False,default="OCPP as a Service"),
             "version": fields.String(description="version", required=False,default="ocpp_incoming_message"),
             "type": fields.String(description="type", required=False,default="CreateOrder"),
+            "action": fields.String(description="action", required=False,default="CreateOrder"),
         })
 
         evse_model=self.namespace.model('evse_create_order',{
@@ -76,7 +91,6 @@ class RequestModel:
 
     def create_order_rfid_reservation(self):
         meta_model=self.namespace.model('meta_create_order_rfid_reservation',{
-            "request_id": fields.String(description="request_id", required=False,default="req-MUserA-1"),
             "timestamp": fields.String(description="timestamp", required=False,default="2021-09-01 00:00:00"),
             "producer": fields.String(description="producer", required=False,default="OCPP as a Service"),
             "version": fields.String(description="version", required=False,default="ocpp_incoming_message"),
@@ -92,7 +106,6 @@ class RequestModel:
         data_model=self.namespace.model('data_create_order_rfid_reservation',{
             "connector_id": fields.Integer(description="connector_id", required=False,default=0),
             "id_tag": fields.String(description="id_tag", required=False,default="MUserA"),
-            "meter_start": fields.Integer(description="meter_start", required=False,default=1000),
             "timestamp": fields.String(description="timestamp", required=False,default="2021-09-01 00:00:00"),
             "reservation_id": fields.Integer(description="reservation_id", required=False,default=0),
             "trigger_method": fields.String(description="trigger_method", required=False,default="make_reservation"),
@@ -106,6 +119,37 @@ class RequestModel:
             "data": fields.Nested(data_model,description="data", required=False,skip_none=True),
         }
         return self.namespace.model("CreateOrderRfidReservationRequestModel", data_models)
+    
+    def create_order_rfid_stop_transaction(self):
+        meta_model=self.namespace.model('meta_create_order_stop_transaction',{
+            "timestamp": fields.String(description="timestamp", required=False,default="2021-09-01 00:00:00"),
+            "producer": fields.String(description="producer", required=False,default="OCPP as a Service"),
+            "version": fields.String(description="version", required=False,default="ocpp_incoming_message"),
+            "type": fields.String(description="type", required=False,default="StopTransaction"),
+            "action": fields.String(description="action", required=False,default="RemoteStopTransaction"),
+        })
+
+        evse_model=self.namespace.model('evse_create_order_rfid_stop_transaction',{
+            "charge_point_id": fields.String(description="charge_point_id", required=False,default="test_add_evse1"),
+            "subprotocol": fields.String(description="subprotocol", required=False,default="ocpp1.6"),
+        })
+
+        data_model=self.namespace.model('data_create_order_rfid_stop_transaction',{
+            "meter_stop": fields.Integer(description="meter_stop", required=False,default=0),
+            "id_tag": fields.String(description="id_tag", required=False,default="MUserA"),
+            "timestamp": fields.String(description="timestamp", required=False,default="2021-09-01 00:00:00"),
+            "transaction_id": fields.Integer(description="transaction_id", required=False,default=0),
+            "reason": fields.String(description="reason", required=False,default="Remote"),
+            "transaction_data": fields.String(description="transaction_data", required=False,default=""),
+            "trigger_method": fields.String(description="trigger_method", required=False,default="stop_transaction"),
+        })
+
+        data_models = {
+            "meta": fields.Nested(meta_model,description="meta", required=False,skip_none=True),
+            "evse": fields.Nested(evse_model,description="evse", required=False,skip_none=True),
+            "data": fields.Nested(data_model,description="data", required=False,skip_none=True),
+        }
+        return self.namespace.model("CreateOrderRfidStopTransactionRequestModel", data_models)
 
     def list_order(self):
         data_models = {
@@ -115,8 +159,7 @@ class RequestModel:
     
 
     def create_order_rfid_authorize(self):
-        meta_model=self.namespace.model('meta_create_order_rfid',{
-            "request_id": fields.String(description="request_id", required=False,default="req-MUserA-1"),
+        meta_model=self.namespace.model('meta_create_order_rfid_authorize',{
             "timestamp": fields.String(description="timestamp", required=False,default="2021-09-01 00:00:00"),
             "producer": fields.String(description="producer", required=False,default="OCPP as a Service"),
             "version": fields.String(description="version", required=False,default="ocpp_incoming_message"),
@@ -124,12 +167,12 @@ class RequestModel:
             "action": fields.String(description="action", required=False,default="Authorize"),
         })
 
-        evse_model=self.namespace.model('evse_create_order_rfid',{
+        evse_model=self.namespace.model('evse_create_order_rfid_authorize',{
             "charge_point_id": fields.String(description="charge_point_id", required=False,default="test_add_evse1"),
             "subprotocol": fields.String(description="subprotocol", required=False,default="ocpp1.6"),
         })
 
-        data_model=self.namespace.model('data_create_order_rfid',{
+        data_model=self.namespace.model('data_create_order_rfid_authorize',{
             "id_tag": fields.String(description="id_tag", required=False,default="MUserA"),
             "trigger_method": fields.String(description="trigger_method", required=False,default="authorize"),
         })

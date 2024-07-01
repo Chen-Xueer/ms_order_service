@@ -1,16 +1,20 @@
-import uuid
+import os
 from flask_app.database_sessions import Database
 from flask_app.services.common_function import DataValidation
+from flask_app.services.models import ListOrderModel, ListOrderResponseModel
 from microservice_utils.settings import logger
 from kafka_app.kafka_management.topic_enum import MsEvDriverManagement, MsPaymentManagement
-from sqlalchemy import and_, case, func, or_
+from sqlalchemy import String, and_, case, func, literal_column, or_
 from sqlalchemy.sql.functions import coalesce
 from sqlalchemy_.ms_order_service.enum_types import ReturnActionStatus, ReturnStatus, OrderStatus
 from sqlalchemy_.ms_order_service.order import Order
 from sqlalchemy_.ms_order_service.tenant import Tenant
 from sqlalchemy_.ms_order_service.transaction import Transaction
-from typing import Tuple
-from datetime import datetime
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+GET_API_EV_DRIVER = os.getenv("GET_API_EV_DRIVER")
 
 class ListOrder:
     def __init__(self):
@@ -18,16 +22,11 @@ class ListOrder:
         self.session = database.init_session()
         self.data_validation = DataValidation()
     
-    def list_order(self,tenant_id,transaction_id,keyword):
+    def list_order(self,data:ListOrderModel):
         try:
-            tenant_exists = self.data_validation.validate_tenants(tenant_id=tenant_id,action='order_retrieval')
+            tenant_exists = self.data_validation.validate_tenants(tenant_id=data.tenant_id,action='order_retrieval')
             if not isinstance(tenant_exists,Tenant):
                 return tenant_exists
-        
-            if transaction_id is not None:
-                filters = and_(Order.tenant_id == tenant_id, Order.transaction_id == transaction_id)
-            else:
-                filters = Order.tenant_id == tenant_id
 
             order_list = self.session.query(
                 Order.transaction_id,
@@ -43,43 +42,32 @@ class ListOrder:
                 Transaction.end_time,
                 Transaction.duration,
                 Transaction.charged_energy,
-                Transaction.amount,
+                coalesce(Transaction.amount,0),
                 Transaction.transaction_detail
-            ).outerjoin(Transaction, Order.transaction_id == Transaction.transaction_id).filter(filters).all()
+            ).outerjoin(
+                Transaction, Order.transaction_id == Transaction.transaction_id
+            ).filter(
+                Order.tenant_id == data.tenant_id
+            ).all()
 
             list_order = []
             append_count = 0
             for order in order_list:
                 append_ind = False
-                order_dict = {
-                    "transaction_id": order[0],
-                    "status": order[1],
-                    "charge_point_id": order[2],
-                    "connector_id": order[3],
-                    "ev_driver_id": order[4],
-                    "is_charging": order[5],
-                    "is_reservation": order[6],
-                    "requires_payment": order[7],
-                    "paid_by": order[8],
-                    "start_time": order[9].isoformat() if order[9] else None,
-                    "end_time": order[10].isoformat() if order[10] else None,
-                    "duration": order[11],
-                    "charged_energy": order[12],
-                    "amount": order[13],
-                    "transaction_detail": order[14]
-                }
+                order = ListOrderResponseModel(**order._asdict())
+                logger.info(order)
 
-                for value in order_dict.values():
-                    if value is not None and keyword is not None and keyword.lower() in str(value).lower():
+                if data.keyword is not None:
+                    if order.search_keyword(data.keyword):
                         append_ind = True
-                    
-                if keyword is None:
+                else:
                     append_ind = True
                 
                 if append_ind:
                     append_count += 1
-                    order_dict["row_count"] = append_count
-                    list_order.append(order_dict)
+                    order = order.__dict__
+                    order["row_count"] = append_count
+                    list_order.append(order)
 
             return {"data": list_order}
         except Exception as e:
@@ -91,24 +79,51 @@ class ListOrder:
 
 
     def list_transaction_summary(self,tenant_id):
-        tenant_exists = self.data_validation.validate_tenants(tenant_id=tenant_id,action='transaction_summary_retrieval')
-        if not isinstance(tenant_exists,Tenant):
-            return tenant_exists
-        
-        summary = self.session.query(
-                                    Order.status,
-                                    func.count(Order.status).label('count'),
-                                    func.sum(coalesce(Transaction.amount,0)).label('total_amount')
-                                ).outerjoin(
-                                    Transaction,Order.transaction_id == Transaction.transaction_id
-                                ).filter(
-                                     Order.tenant_id == tenant_id
-                                ).group_by(
-                                    Order.status
-                                ).all()
-        logger.info(summary)
-        return {"data":summary}
-    
+        try:
+            tenant_exists = self.data_validation.validate_tenants(tenant_id=tenant_id,action='transaction_summary_retrieval')
+            if not isinstance(tenant_exists,Tenant):
+                return tenant_exists     
+
+            summary = self.session.query(
+                                        literal_column("'driverA'", String).label('driver'),
+                                        literal_column("'driverA@domain.com'", String).label('email'),
+                                        literal_column("'site1'", String).label('site_name'),
+                                        literal_column("'EVSE1'", String).label('device_name'),
+                                        Order.transaction_id,
+                                        Transaction.start_time,
+                                        Transaction.end_time,
+                                        Transaction.duration,
+                                        Transaction.charged_energy,
+                                        Transaction.amount
+                                    ).outerjoin(
+                                        Transaction,Order.transaction_id == Transaction.transaction_id
+                                    ).filter(
+                                         Order.tenant_id == tenant_id
+                                    ).all()
+            data=[]
+            for rec in summary:
+                #driver_api = requests.get(f"{GET_API_EV_DRIVER}{rec.ev_driver_id}")
+                #if driver_api.status_code == 200:
+                    #driver_api = driver_api.json().get("data")               
+                data.append(
+                    {
+                        "driver":rec.driver,
+                        "email":rec.email,
+                        "site_name":rec.site_name,
+                        "device_name":rec.device_name,
+                        "start":rec.start_time,
+                        "stop":rec.end_time,
+                        "duration":rec.duration,
+                        "charged_energy":rec.charged_energy,
+                        "total_cost":rec.amount,
+                    }
+                )
+
+            logger.info(data)
+            return {"data": data, "action": "transaction_summary_retrieval", "action_status": ReturnActionStatus.COMPLETED.value,"status":ReturnStatus.SUCCESS.value},200
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            return {"message": "list transaction summary failed", "action":"transaction_summary_retrieval","action_status":ReturnActionStatus.FAILED.value,"status": ReturnStatus.ERROR.value},500
 
 
     def list_transaction_breakdown(self,tenant_id):

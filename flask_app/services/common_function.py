@@ -66,10 +66,10 @@ class DataValidation:
         
     def validate_tenants(self,tenant_id,action):
 
-        tenant_exists  = self.session.query(Tenant).filter(Tenant.tenant == tenant_id).first()
+        tenant_exists  = self.session.query(Tenant).filter(Tenant.tenant_id == tenant_id).first()
         if tenant_exists is None:
             # kafka out check validity of tenant with tenant management service
-            return {"message": "tenant_exists not found", "action":action,"action_status":ReturnActionStatus.FAILED.value,"status": ReturnStatus.ERROR.value},404
+            return {"message": "tenant not found", "action":action,"action_status":ReturnActionStatus.FAILED.value,"status": ReturnStatus.ERROR.value},404
         return tenant_exists
     
     def validate_order(self,transaction_id):
@@ -89,8 +89,6 @@ class DataValidation:
         if transaction_exists is None:
             return None
         return transaction_exists
-
-
 
 
 def kafka_out(topic: str, data: dict, request_id: str):

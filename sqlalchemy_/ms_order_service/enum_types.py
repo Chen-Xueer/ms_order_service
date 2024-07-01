@@ -1,5 +1,13 @@
 import enum
 
+class RoleType(enum.Enum):
+    ADMIN = 'Admin'
+    SUPERADMIN = 'SuperAdmin'
+    MEMBER = 'Member'
+    HOMEOWNER = 'HomeOwner'
+    DRIVER = 'Driver'
+    OPERATOR = 'Operator'
+
 class OrderStatus(enum.Enum):
     CREATED = 'Created'
     AUTHORIZED = 'Authorized'
@@ -39,3 +47,17 @@ class TriggerMethod(enum.Enum):
     MAKE_RESERVATION = 'make_reservation'
     STOP_TRANSACTION = 'stop_transaction'
     CANCEL_ORDER = 'cancel_order'
+
+
+class StopTransactionReason(enum.Enum):
+    emergency_stop = "EmergencyStop"
+    ev_disconnected = "EVDisconnected"
+    hard_reset = "HardReset"
+    local = "Local"
+    other = "Other"
+    power_loss = "PowerLoss"
+    reboot = "Reboot"
+    remote = "Remote"
+    soft_reset = "SoftReset"
+    unlock_command = "UnlockCommand"
+    de_authorized = "DeAuthorized"

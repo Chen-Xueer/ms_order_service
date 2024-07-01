@@ -1,9 +1,9 @@
 import uuid
 from flask_app.database_sessions import Database
 from flask_app.services.common_function import DataValidation
-from flask_app.services.models import KafkaPayload
+from flask_app.services.models import KafkaPayload, RemoteStartPayload
 from microservice_utils.settings import logger
-from kafka_app.kafka_management.topic_enum import MsEvDriverManagement
+from kafka_app.kafka_management.topic_enum import MsCSMSManagement, MsEvDriverManagement
 from sqlalchemy_.ms_order_service.enum_types import ReturnActionStatus, ReturnStatus, OrderStatus
 from sqlalchemy_.ms_order_service.order import Order
 from sqlalchemy_.ms_order_service.tenant import Tenant
@@ -78,8 +78,34 @@ class CreateOrder:
             self.session.rollback()
             return {"message": "insert transaction failed", "action":"transaction_creation","action_status":ReturnActionStatus.FAILED.value,"status": ReturnStatus.ERROR.value},500
 
+    def remote_start_payload(self,data:KafkaPayload):
+        try:
+            data.meta.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            data.meta.version = "1.0.0"
+            data.meta.meta_type = "order_creation"
+            data.meta.action = "RemoteStartTransaction"
 
-    def create_order_mobile_id(self,mobile_id,data:KafkaPayload,tenant_id):
+            remote_start_payload = RemoteStartPayload()
+            remote_start_payload.meta.request_id = data.meta.request_id
+            remote_start_payload.meta.action = 'RemoteStartTransaction'
+            remote_start_payload.meta.meta_type = 'ReservationRequest'
+            remote_start_payload.evse.charge_point_id = data.evse.charge_point_id
+            remote_start_payload.evse.subprotocol = data.evse.subprotocol
+            remote_start_payload.id_tag = data.id_tag
+            remote_start_payload.connector_id = data.connector_id
+            data = remote_start_payload
+
+            kafka_out(topic=MsCSMSManagement.RESERVATION_REQUEST.value,data=data.to_dict(),request_id=data.meta.request_id)
+            
+            return data.to_dict()
+        except Exception as e:
+            logger.error(f"(X) Error while creating order: {e}")
+            self.session.rollback()
+            return {"message": "create order failed", "action":"order_creation","action_status":ReturnActionStatus.FAILED.value,"status": ReturnStatus.ERROR.value},500
+        
+
+
+    def create_order_mobile_id(self,mobile_id,data:KafkaPayload):
         try:
             #tenant_exists = self.data_validation.validate_tenants(tenant_id=tenant_id,action=data.meta.meta_type)
             #if not isinstance(tenant_exists,Tenant):
@@ -96,7 +122,7 @@ class CreateOrder:
                 connector_id=data.connector_id,
                 id_tag=mobile_id,
                 trigger_method=data.trigger_method,
-                tenant_id=tenant_id,
+                tenant_id=data.tenant_id,
                 request_id = data.meta.request_id
             )
 
@@ -121,7 +147,7 @@ class CreateOrder:
                 data.start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 data.is_reservation = False
                 data.is_charging = False
-                data.tenant_id = tenant_id
+                data.tenant_id = data.tenant_id
                 data.status_code = 201
                 
                 kafka_out(topic=MsEvDriverManagement.DRIVER_VERIFICATION_REQUEST.value,data=data.to_dict(),request_id=data.meta.request_id)

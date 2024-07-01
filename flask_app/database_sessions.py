@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 import os
 from microservice_utils.settings import logger
 
-load_dotenv(".env.testing", override=True)
+load_dotenv(".env", override=True)
       
 master_sessionmakers: Dict[str, scoped_session[Session]] = {}
 

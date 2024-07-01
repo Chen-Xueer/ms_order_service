@@ -1,13 +1,17 @@
 import asyncio
+import uuid
 from flask import request
 from flask_restx import Resource
 from flask_restx._http import HTTPStatus
+from flask_app.services.update_order import UpdateOrder
 from microservice_utils.api_namespace import ApiNamespace
 from flask_app.swagger_models import RequestModel,ResponseModel
 from flask_app.services.create_order import CreateOrder
 from flask_app.services.list_order import ListOrder
 from microservice_utils.settings import logger
-from flask_app.services.models import KafkaPayload
+from flask_app.services.models import KafkaPayload, ListOrderModel
+from microservice_utils.oneems_user_mgmt_decorator.auth import permission_required
+from sqlalchemy_.ms_order_service.enum_types import ReturnActionStatus, RoleType
 
 ns_mobile = ApiNamespace("mobile", "APIs related to mobile")
 request_model = RequestModel(ns_mobile)
@@ -21,114 +25,128 @@ ns_kafka = ApiNamespace("mimic_kafka", "APIs related to mimic kafka")
 request_model = RequestModel(ns_kafka)
 response_model = ResponseModel(ns_kafka)
 
+claims = {
+    "custom:tenant_id": 1,
+    "custom:role": RoleType.OPERATOR.value,
+    "email": "abc@domain.com"
+}
+
 # PATH: /orderservice/mobile/remote_start
 @ns_mobile.route("remote_start/<string:mobile_id>")
 class remote_start(Resource):
     #@ns_mobile.doc(security="Authorization")
-    #@token_required
+    #@permission_required()
     @ns_mobile.expect(request_model.create_order_mobile(), validate=True)
     @ns_mobile.marshal_with(response_model.create_order(), skip_none=True)
     def post(self,mobile_id):
-        #token = str(request.headers["Authorization"])
-        #claims = decode_token(token)
-        tenant_id = 'tenant_idA'
-
+        
+        #claims = decode_token(get_token())
         data = request.json
+        data.get("meta").update({"request_id":str(uuid.uuid4())})
+        data.get("data").update({"tenant_id":str(claims.get("custom:tenant_id"))})
         logger.info(f"Request data: {data}")
 
         create_order = CreateOrder()
-        create_order.create_order_mobile_id(mobile_id=mobile_id,data=KafkaPayload(**data),tenant_id=tenant_id)
+        create_order.remote_start_payload(data=KafkaPayload(**data))
 
 # PATH: /orderservice/mobile/make_reservation
 @ns_mobile.route("make_reservation/<string:mobile_id>")
 class make_reservation(Resource):
     #@ns_mobile.doc(security="Authorization")
-    #@token_required
+    #@permission_required()
     @ns_mobile.expect(request_model.create_order_rfid_reservation(), validate=True)
     @ns_mobile.marshal_with(response_model.create_order(), skip_none=True)
     def post(self,mobile_id):
-        #token = str(request.headers["Authorization"])
-        #claims = decode_token(token)
-        tenant_id = 'tenant_idA'
+        
+        #claims = decode_token(get_token())
 
         data = request.json
+        data.get("meta").update({"request_id":str(uuid.uuid4())})
+        data.get("data").update({"tenant_id":str(claims.get("custom:tenant_id"))})
         logger.info(f"Request data: {data}")
 
         create_order = CreateOrder()
-        create_order.create_order_mobile_id(mobile_id=mobile_id,data=KafkaPayload(**data),tenant_id=tenant_id)
+        create_order.create_order_mobile_id(mobile_id=mobile_id,data=KafkaPayload(**data))
+
+# PATH: /orderservice/mobile/stop_transaction
+@ns_mobile.route("stop_transaction/<string:mobile_id>")
+class stop_transaction(Resource):
+    #@ns_mobile.doc(security="Authorization")
+    #@permission_required()
+    @ns_mobile.expect(request_model.create_order_rfid_stop_transaction(), validate=True)
+    @ns_mobile.marshal_with(response_model.create_order(), skip_none=True)
+    def post(self,mobile_id):
+        
+        #claims = decode_token(get_token())
+
+        data = request.json
+        data.get("meta").update({"request_id":str(uuid.uuid4())})
+        data.get("data").update({"tenant_id":str(claims.get("custom:tenant_id"))})
+        logger.info(f"Request data: {data}")
+
+        update_order = UpdateOrder()
+        update_order.update_order(data=KafkaPayload(**data),cancel_ind=None)
 
 # PATH: /orderservice/mobile/order
-@ns_mobile.route("order/<int:transaction_id>/", defaults={'keyword': None})
-@ns_mobile.route("order/<int:transaction_id>/<string:keyword>")
+@ns_mobile.route("order/list")
 class order_driver(Resource):
     #@ns_mobile.doc(security="Authorization")
-    #@token_required
+    #@permission_required()
+    @ns_mobile.param('keyword')
     @ns_mobile.marshal_with(response_model.list_order(), skip_none=True)
-    def get(self,transaction_id,keyword):
-        #token = str(request.headers["Authorization"])
-        #claims = decode_token(token)
-        logger.info(f"Transaction ID: {transaction_id}")
-        tenant_id = 'tenant_idA'
+    def get(self):
+        #claims = decode_token(get_token())
+
+        data={
+            "keyword": request.args.get("keyword"),
+            "tenant_id": str(claims.get("custom:tenant_id")),
+            "role": claims.get("custom:role")
+        }
+        
         list_order = ListOrder()
-        return list_order.list_order(tenant_id=tenant_id,transaction_id=transaction_id,keyword=keyword)
+        return list_order.list_order(data=ListOrderModel(**data))
 
 
-
-# PATH: /orderservice/operator/order
-@ns_operator.route("order", defaults={'keyword': None})
-@ns_operator.route("order/<string:keyword>")
-class order_operator(Resource):
-    #@ns_operator.doc(security="Authorization")
-    #@token_required
-    @ns_operator.marshal_with(response_model.list_order(), skip_none=True)
-    def get(self,keyword):
-        #token = str(request.headers["Authorization"])
-        #claims = decode_token(token)
-        tenant_id = 'tenant_idA'
-        list_order = ListOrder()
-        return list_order.list_order(tenant_id=tenant_id,transaction_id=None,keyword=keyword)
 
 # PATH: /orderservice/operator/transaction_summary
 @ns_operator.route("transaction_summary")
 class transaction_summary(Resource):
     #@ns_operator.doc(security="Authorization")
-    #@token_required
+    #@permission_required()
     @ns_operator.marshal_with(response_model.list_order(), skip_none=True)
     def get(self):
-        #token = str(request.headers["Authorization"])
-        #claims = decode_token(token)
-        tenant_id = 'tenant_idA'
+        
+        #claims = decode_token(get_token())
         list_order = ListOrder()
-        return list_order.list_transaction_summary(tenant_id=tenant_id)
+        return list_order.list_transaction_summary(tenant_id=str(claims.get("custom:tenant_id")))
 
 # PATH: /orderservice/operator/transaction_breakdown
 @ns_operator.route("transaction_breakdown")
 class transaction_breakdown(Resource):
     #@ns_operator.doc(security="Authorization")
-    #@token_required
+    #@permission_required()
     @ns_operator.marshal_with(response_model.list_order(), skip_none=True)
     def get(self):
-        #token = str(request.headers["Authorization"])
-        #claims = decode_token(token)
-        tenant_id = 'tenant_idA'
+        
+        #claims = decode_token(get_token())
         list_order = ListOrder()
-        return list_order.list_transaction_breakdown(tenant_id=tenant_id)
+        return list_order.list_transaction_breakdown(tenant_id=str(claims.get("custom:tenant_id")))
 
 
 
 # PATH: /orderservice/kafka/authorize
 @ns_kafka.route("authorize")
 class authorize(Resource):
-    #@ns_mobile.doc(security="Authorization")
-    #@token_required
+    #@ns_kafka.doc(security="Authorization")
+    #@permission_required()
     @ns_kafka.expect(request_model.create_order_rfid_authorize(), validate=True)
     @ns_kafka.marshal_with(response_model.create_order(), skip_none=True)
     def post(self):
-        #token = str(request.headers["Authorization"])
-        #claims = decode_token(token)
-        tenant_id = 'tenant_idA'
-
+        
+        #claims = decode_token(get_token())
         data = request.json
+        data.get("data").update({"tenant_id":str(claims.get("custom:tenant_id"))})
+        data.get("meta").update({"request_id":str(uuid.uuid4())})
         logger.info(f"Request data: {data}")
 
         create_order = CreateOrder()

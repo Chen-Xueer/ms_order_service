@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  oneems-order-service:
+    image: oneems-order-service:latest
+    build: .
+    volumes:
+      - ~/.aws:/root/.aws
+    environment:
+      - AWS_DEFAULT_REGION=ap-southeast-1
+    ports:
+      - "7030:7030"
+    command: python3 main.py

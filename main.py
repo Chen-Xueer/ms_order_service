@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 if __name__ == "__main__":
     # Get environemnt status
-    load_dotenv(".env.testing", override=True)
+    load_dotenv(".env", override=True)
 
     logger.info("Starting kafka connection")
     from kafka_app import app_init

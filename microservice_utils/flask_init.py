@@ -33,7 +33,7 @@ def flask_restx_init(
 
     #@app.before_request
     #def setup_session():
-    #    db.init_session()  # get the session for the current thread
+    #    db.init_sesssion()  # get the session for the current thread
 
     #@app.teardown_request
     #def teardown_session(exception=None):

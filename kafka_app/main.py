@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import os
 from microservice_utils.settings import logger
 
-load_dotenv(".env.testing")
+load_dotenv(".env")
 logger.info("Initialize kafka: " + os.getenv("KAFKA_BOOTSTRAP_SERVER") + " " + os.getenv("KAFKA_SASL_USERNAME") + " " + os.getenv("KAFKA_SASL_PASSWORD"))
 
 kafka_app = KafkaApp(

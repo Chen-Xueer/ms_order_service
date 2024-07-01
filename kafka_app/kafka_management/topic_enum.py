@@ -3,10 +3,10 @@ import enum
 class MsEvDriverManagement(enum.Enum):
     DRIVER_VERIFICATION_REQUEST = "DriverVerificationRequest"
     DRIVER_VERIFICATION_RESPONSE = "DriverVerificationResponse"
-    UPDATE_DRIVER_STATUS = "UpdateDriverStatus"
 
 class MsOrderManagement(enum.Enum):
     CREATE_ORDER = "CreateOrder"
+    CREATE_ORDER_RESPONSE = "CreateOrderResponse"
     REJECT_ORDER = "RejectOrder"
     STOP_TRANSACTION = "StopTransaction"
 

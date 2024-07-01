@@ -7,7 +7,7 @@ backup/
 *.log
 .env
 .env.actual
-.env.testing
+.env
 
 # alembic
 /alembic*
