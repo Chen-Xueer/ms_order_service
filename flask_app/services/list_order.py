@@ -1,3 +1,4 @@
+import json
 import os
 from flask_app.database_sessions import Database
 from flask_app.services.common_function import DataValidation
@@ -85,10 +86,9 @@ class ListOrder:
                 return tenant_exists     
 
             summary = self.session.query(
-                                        literal_column("'driverA'", String).label('driver'),
-                                        literal_column("'driverA@domain.com'", String).label('email'),
-                                        literal_column("'site1'", String).label('site_name'),
-                                        literal_column("'EVSE1'", String).label('device_name'),
+                                        Order.ev_driver_id,
+                                        literal_column("'site_name'").label("site_name"),
+                                        literal_column("'device_name'").label("device_name"),
                                         Order.transaction_id,
                                         Transaction.start_time,
                                         Transaction.end_time,
@@ -100,15 +100,25 @@ class ListOrder:
                                     ).filter(
                                          Order.tenant_id == tenant_id
                                     ).all()
+            ev_driver_list = []
             data=[]
             for rec in summary:
-                #driver_api = requests.get(f"{GET_API_EV_DRIVER}{rec.ev_driver_id}")
-                #if driver_api.status_code == 200:
-                    #driver_api = driver_api.json().get("data")               
+                filtered_list = [driver for driver in ev_driver_list if driver['ev_driver_id'] == rec.ev_driver_id]
+                if len(filtered_list) == 0:
+                    driver_api = requests.get(f"{GET_API_EV_DRIVER}{rec.ev_driver_id}")
+                    if driver_api.status_code == 200:
+                        driver_api = driver_api.json().get('data',None)
+                        driver_api['ev_driver_id'] = rec.ev_driver_id
+                        ev_driver_list.append(driver_api)
+                        filtered_list = [driver for driver in ev_driver_list if driver['ev_driver_id'] == rec.ev_driver_id][0]
+                        logger.info(f"filtered_list:{filtered_list}")
+                else:
+                    filtered_list = filtered_list[0]
+                
                 data.append(
                     {
-                        "driver":rec.driver,
-                        "email":rec.email,
+                        "driver":filtered_list.get('driver',None),
+                        "email":filtered_list.get('email',None),
                         "site_name":rec.site_name,
                         "device_name":rec.device_name,
                         "start":rec.start_time,
