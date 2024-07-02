@@ -5,7 +5,7 @@ from flask_app.services.common_function import DataValidation
 from flask_app.services.models import ListOrderModel, ListOrderResponseModel
 from microservice_utils.settings import logger
 from kafka_app.kafka_management.topic_enum import MsEvDriverManagement, MsPaymentManagement
-from sqlalchemy import String, and_, case, func, literal_column, or_
+from sqlalchemy import Float, String, and_, case, func, literal_column, or_, cast
 from sqlalchemy.sql.functions import coalesce
 from sqlalchemy_.ms_order_service.enum_types import ReturnActionStatus, ReturnStatus, OrderStatus
 from sqlalchemy_.ms_order_service.order import Order
@@ -25,11 +25,11 @@ class ListOrder:
     
     def list_order(self,data:ListOrderModel):
         try:
-            tenant_exists = self.data_validation.validate_tenants(tenant_id=data.tenant_id,action='order_retrieval')
-            if not isinstance(tenant_exists,Tenant):
-                return tenant_exists
+            # tenant_exists = self.data_validation.validate_tenants(tenant_id=data.tenant_id,action='order_retrieval')
+            # if not isinstance(tenant_exists,Tenant):
+            #     return tenant_exists
 
-            order_list = self.session.query(
+            query = self.session.query(
                 Order.transaction_id,
                 Order.status,
                 Order.charge_point_id,
@@ -43,14 +43,24 @@ class ListOrder:
                 Transaction.end_time,
                 Transaction.duration,
                 Transaction.charged_energy,
-                coalesce(Transaction.amount,0),
+                coalesce(Transaction.amount,0).label("amount"),
                 Transaction.transaction_detail
             ).outerjoin(
                 Transaction, Order.transaction_id == Transaction.transaction_id
             ).filter(
                 Order.tenant_id == data.tenant_id
-            ).all()
+            )
 
+            # Conditionally add filter if data.ev_driver_id is not None
+            if data.ev_driver_id is not None:
+                query = query.filter(Order.ev_driver_id == data.ev_driver_id)
+
+            if data.transaction_id is not None:
+                query = query.filter(Order.transaction_id == data.transaction_id)
+
+            # Execute the query
+            order_list = query.all()
+            
             list_order = []
             append_count = 0
             for order in order_list:
@@ -156,6 +166,4 @@ class ListOrder:
                         ).all()
 
         return {"data":summary}
-
-
         
