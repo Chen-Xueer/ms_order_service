@@ -213,11 +213,15 @@ class StopTransactionPayload:
 @dataclass(init=False)
 class ListOrderModel:
     keyword: Optional[str] = None
+    ev_driver_id: Optional[str] = None
+    transaction_id: Optional[str] = None
     tenant_id: Optional[str] = None
     role: Optional[str] = None
 
     def __init__(self, **kwargs):
         self.keyword = kwargs.get("keyword")
+        self.ev_driver_id = kwargs.get("ev_driver_id")
+        self.transaction_id = kwargs.get("transaction_id")
         self.tenant_id = kwargs.get("tenant_id")
         self.role = kwargs.get("role")
 

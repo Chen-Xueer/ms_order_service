@@ -93,12 +93,16 @@ class order_driver(Resource):
     #@ns_mobile.doc(security="Authorization")
     #@permission_required()
     @ns_mobile.param('keyword')
+    @ns_mobile.param('ev_driver_id')
+    @ns_mobile.param('transaction_id')
     @ns_mobile.marshal_with(response_model.list_order(), skip_none=True)
     def get(self):
         #claims = decode_token(get_token())
 
         data={
             "keyword": request.args.get("keyword"),
+            "ev_driver_id": request.args.get("ev_driver_id"),
+            "transaction_id": request.args.get("transaction_id"),
             "tenant_id": str(claims.get("custom:tenant_id")),
             "role": claims.get("custom:role")
         }

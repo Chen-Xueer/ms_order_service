@@ -9,6 +9,8 @@ class MsOrderManagement(enum.Enum):
     CREATE_ORDER_RESPONSE = "CreateOrderResponse"
     REJECT_ORDER = "RejectOrder"
     STOP_TRANSACTION = "StopTransaction"
+    LIST_ORDER_REQUEST = "ListOrderRequest"
+    LIST_ORDER_RESPONSE = "ListOrderResponse"
 
 class MsPaymentManagement(enum.Enum):
     AUTHORIZE_PAYMENT_REQUEST = "AuthorizePaymentRequest"
