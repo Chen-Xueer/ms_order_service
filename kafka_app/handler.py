@@ -4,12 +4,11 @@ from flask_app.services.common_function import DataValidation
 from microservice_utils.settings import logger
 from kafka_app.kafka_management.topic_enum import MsOrderManagement, MsEvDriverManagement,MsPaymentManagement,MsCSMSManagement
 from flask_app.services.models import KafkaPayload, ListOrderModel
-from kafka_app.kafka_management.kafka_topic import KafkaMessage
+from kafka_app.kafka_management.kafka_topic import KafkaMessage,Topic
 from flask_app.database_sessions import Database
 from flask_app.services.update_order import UpdateOrder 
 from flask_app.services.list_order import ListOrder
 from sqlalchemy_.ms_order_service.enum_types import TriggerMethod
-from ms_tools.kafka_management.kafka_topic import Topic
 
 def handler(message: KafkaMessage):
     try:
