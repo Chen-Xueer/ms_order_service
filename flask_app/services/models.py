@@ -273,11 +273,11 @@ class ListOrderResponseModel:
             "is_reservation": self.is_reservation,
             "requires_payment": self.requires_payment,
             "paid_by": self.paid_by,
-            "start_time": self.start_time,
-            "end_time": self.end_time,
+            "start_time": str(self.start_time),
+            "end_time": str(self.end_time),
             "duration": self.duration,
             "charged_energy": self.charged_energy,
-            "amount": self.amount,
+            "amount": float(self.amount),
             "transaction_detail": self.transaction_detail
         }
     
