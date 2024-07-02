@@ -255,11 +255,11 @@ class ListOrderResponseModel:
         self.is_reservation = kwargs.get("is_reservation")
         self.requires_payment = kwargs.get("requires_payment")
         self.paid_by = kwargs.get("paid_by")
-        self.start_time = kwargs.get("start_time")
-        self.end_time = kwargs.get("end_time")
+        self.start_time = str(kwargs.get("start_time"))
+        self.end_time = str(kwargs.get("end_time"))
         self.duration = kwargs.get("duration")
         self.charged_energy = kwargs.get("charged_energy")
-        self.amount = kwargs.get("amount")
+        self.amount = str(kwargs.get("amount"))
         self.transaction_detail = kwargs.get("transaction_detail")
 
     def to_dict(self):

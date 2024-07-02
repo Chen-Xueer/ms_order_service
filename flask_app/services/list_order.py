@@ -79,6 +79,12 @@ class ListOrder:
                     order["row_count"] = append_count
                     list_order.append(order)
 
+            # formatted_results = []
+            # for order in list_order:
+            #     if list_order['start_time'] or list_order['end_time']:
+            #         list_order['start_time'] = list_order['start_time'].isoformat()
+                # formatted_results.append(formatted_result)
+
             return {"data": list_order}
         except Exception as e:
             logger.error(f"Error: {e}")
