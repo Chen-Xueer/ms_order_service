@@ -1,13 +1,15 @@
+import datetime
 import json
 from flask_app.services.common_function import DataValidation
 from microservice_utils.settings import logger
 from kafka_app.kafka_management.topic_enum import MsOrderManagement, MsEvDriverManagement,MsPaymentManagement,MsCSMSManagement
-from flask_app.services.models import KafkaPayload
+from flask_app.services.models import KafkaPayload, ListOrderModel
 from kafka_app.kafka_management.kafka_topic import KafkaMessage
 from flask_app.database_sessions import Database
 from flask_app.services.update_order import UpdateOrder 
-from kafka_app.kafka_management.kafka_app import non_blocking
+from flask_app.services.list_order import ListOrder
 from sqlalchemy_.ms_order_service.enum_types import TriggerMethod
+from ms_tools.kafka_management.kafka_topic import Topic
 
 def handler(message: KafkaMessage):
     try:
@@ -49,8 +51,26 @@ def handler(message: KafkaMessage):
         ):
             logger.info(f"Updating Order: {data}")
             update_order = UpdateOrder()   
-            update_order.update_order(data = KafkaPayload(**data),cancel_ind = None)   
-            
+            update_order.update_order(data = KafkaPayload(**data),cancel_ind = None)
+
+        if message.topic == MsOrderManagement.LIST_ORDER_REQUEST.value:
+            list_order = ListOrder()
+            payload = data.get("data")
+            response = list_order.list_order(data=ListOrderModel(**payload))
+            data["meta"]["producer"] = "OrderService"
+            data["meta"]["type"] = MsOrderManagement.LIST_ORDER_RESPONSE.value
+            output = {
+                "meta": data["meta"],
+                "data": response
+            }
+            from kafka_app.main import kafka_app
+            kafka_app.send(
+                topic=Topic(
+                    name=MsOrderManagement.LIST_ORDER_RESPONSE.value,
+                    data=output,
+                ),
+                request_id=message.headers["request_id"]
+            )            
     except Exception as e:
         session.rollback()
         logger.error(e)
@@ -70,7 +90,8 @@ def validate_request(message: KafkaMessage):
         MsCSMSManagement.RESERVATION_RESPONSE.value,
         MsPaymentManagement.AUTHORIZE_PAYMENT_RESPONSE.value,
         MsOrderManagement.REJECT_ORDER.value,
-        MsOrderManagement.STOP_TRANSACTION.value
+        MsOrderManagement.STOP_TRANSACTION.value,
+        MsOrderManagement.LIST_ORDER_REQUEST.value
     ]:
         logger.info("Action Not Implemented")
         validate.update({"error_description": {"action": "Action Not Implemented"}, "status_code": 404})

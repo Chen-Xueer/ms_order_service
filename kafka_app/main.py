@@ -1,4 +1,4 @@
-from kafka_app.kafka_management.kafka_app import KafkaApp
+from ms_tools.kafka_management.kafka_app import KafkaApp
 from dotenv import load_dotenv
 import os
 from microservice_utils.settings import logger
@@ -13,5 +13,9 @@ kafka_app = KafkaApp(
     sasl_mechanism="SCRAM-SHA-512",
     sasl_username=os.environ.get("KAFKA_SASL_USERNAME"),
     sasl_password=os.environ.get("KAFKA_SASL_PASSWORD", ""),
-    _router_response_timeout=60
+    _response_timeout=60,
+    new_topic_config={
+        "num_partitions": 1,
+        "replication_factor": 2
+    }
 )
