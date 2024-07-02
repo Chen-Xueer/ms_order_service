@@ -1,18 +1,20 @@
-import asyncio
-import atexit
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import logging
-import time
 import uuid
 import threading
-from confluent_kafka import Producer, Consumer, KafkaError, Message
-from typing import Optional
+from confluent_kafka import (
+    Producer,
+    Consumer,
+    KafkaError,
+    Message,
+    TopicPartition,
+)
+from typing import Dict, Optional
 from kafka_app.kafka_management.kafka_topic import KafkaMessage, Topic
-from kafka_app.kafka_management.kafka_router import KafkaRouter
 from typing import List, Callable
 from confluent_kafka.admin import AdminClient, NewTopic
-import uuid
+
 
 # sample usage: start_thread(lambda: func(*args, **kwargs))
 def non_blocking(func):
@@ -33,21 +35,32 @@ class KafkaApp:
         self,
         service_name: str,
         brokers: str,
+        new_topic_config: dict,
         sasl_username: Optional[str] = None,
         sasl_password: Optional[str] = None,
         sasl_mechanism: str = "SCRAM-SHA-512",
         security_protocol: str = "SASL_SSL",
-        _router_response_timeout: int = 30,
+        _response_timeout: int = 30,
         _logger=logger,
-        _commit_after_received_message_count=100,
     ):
         self.service_name = service_name
 
-        basic_config = {
+        # new topic config
+        if (
+            "num_partitions" in new_topic_config
+            and "replication_factor" in new_topic_config
+        ):
+            self.new_topic_config = new_topic_config
+        else:
+            raise ValueError(
+                "num_partitions and replication_factor are required in new_topic_config"
+            )
+
+        self.basic_config = {
             "bootstrap.servers": brokers,
         }
-        if sasl_username is not None or sasl_password is not None:
-            basic_config = {
+        if sasl_username is not None and sasl_password is not None:
+            self.basic_config = {
                 "bootstrap.servers": brokers,
                 "sasl.mechanisms": sasl_mechanism,
                 "security.protocol": security_protocol,
@@ -55,7 +68,7 @@ class KafkaApp:
                 "sasl.password": sasl_password,
             }
         # Admin
-        self.admin_client = AdminClient(basic_config)
+        self.admin_client = AdminClient(self.basic_config)
 
         # Consumer
         consumer_config = {
@@ -69,39 +82,31 @@ class KafkaApp:
             # When set to read_committed, the consumer will only be able to read records
             # from committed transactions (in addition to records not part of transactions)
             "isolation.level": "read_committed",
+            # fallback broker version if ApiVersionRequest fails
             "broker.version.fallback": "3.6.1",
+            # broker address family: v4, v6, or any
             "broker.address.family": "v4",
+            # heartbeat to ensure consumer's session stays active
             "heartbeat.interval.ms": "3000",
         }
-        consumer_config.update(basic_config)
+        consumer_config.update(self.basic_config)
         self.consumer = Consumer(consumer_config)
+        self.consumer_config = consumer_config
+        self.consumer_active = False
+        self.topic_producer = None
 
-        # Producer
-        producer_config = {
-            "transactional.id": str(uuid.uuid4()),
-            "broker.version.fallback": "3.6.1",
-            "broker.address.family": "v4",
-        }
-        producer_config.update(basic_config)
-        self.producer = Producer(producer_config)
+        # Producers dict
+        self.producers: Dict[str, Producer] = {}
+        self.response_timeout = _response_timeout
+        self.commit_lock = []
 
-        # Init transactions
-        self.producer.init_transactions()
-        self.producer.begin_transaction()
-
-        # Router
-        self.router = KafkaRouter(response_timeout=_router_response_timeout)
+        # General producer
+        self.general_producer = Producer(self.basic_config)
 
         # Logger
         self._logger = _logger
 
-        # commit queue
-        self._commit_after_received_message_count = _commit_after_received_message_count
-        
-        self.commit_call = asyncio.Queue()
-        threading.Thread(target=self._wait_for_commit).start()
-
-    def delivery_report(self, err, msg):
+    def _delivery_report(self, err, msg):
         if err is not None:
             self._logger.info(
                 "Message delivery failed ({} [{}]): {}".format(
@@ -131,62 +136,84 @@ class KafkaApp:
             )
         )
 
-        self.producer.produce(
-            topic=topic.name,
-            value=json.dumps(topic.data).encode(),
-            headers=topic.headers,
-            key=message_key,
-            # partition=1,
-            on_delivery=self.delivery_report,
-        )
+        worker = self.general_producer
+        if self.topic_producer is not None:
+            worker = self.producers[self.topic_producer]
 
-        self._logger.info("=== Committing transaction at input offset ===")
-        self.commit_call.put_nowait(item=True)
-
-        if topic.return_topic is not None:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-            result = loop.run_until_complete(
-                self.router.wait_for(topic.return_topic, req_id)
+        def produce():
+            worker.produce(
+                topic=topic.name,
+                value=json.dumps(topic.data).encode(),
+                headers=topic.headers,
+                key=message_key,
+                on_delivery=self._delivery_report,
             )
 
+        if topic.return_topic is not None:
+            result = self._return_consume(topic.return_topic, req_id, produce)
+
+            self._logger.info(
+                f"=== Return message: {result.key} {result.topic} {result.headers} {json.dumps(result.payload)} ==="
+            )
             return result
+
+        else:
+            produce()
 
         return None
 
-    def _commit(self, start_new_transaction: bool = False):
-        # Send the consumer's position to transaction to commit
-        # them along with the transaction, committing both
-        # input and outputs in the same transaction is what provides EOS.
-        self.producer.send_offsets_to_transaction(
-            self.consumer.position(self.consumer.assignment()),
-            self.consumer.consumer_group_metadata(),
-        )
+    def _start_commit(self, p_key):
 
-        # Commit the transaction
-        self.producer.commit_transaction()
+        try:
+            if not self.consumer_active:
+                raise RuntimeError("Consumer is not active")
 
-        if start_new_transaction:
-            self.producer.begin_transaction()
+            if p_key not in self.producers:
+                raise RuntimeError(f"Producer {p_key} not found")
 
-    def _wait_for_commit(self):
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+            if p_key in self.commit_lock:
+                return
 
-        while True:
-            while self.commit_call.empty():
-                time.sleep(1)
-                continue
-            result = loop.run_until_complete(self.commit_call.get())
-            self._commit(result)
+            self.topic_producer = None
+            self.commit_lock.append(p_key)
 
-    def create_process(
+            work_producer = self.producers[p_key]
+
+            key_data = p_key.split("-")
+
+            consume_topic = key_data[1]
+            consume_partition = int(key_data[2])
+
+            # Send the consumer's position to transaction to commit
+            # them along with the transaction, committing both
+            # input and outputs in the same transaction is what provides EOS.
+
+            work_producer.send_offsets_to_transaction(
+                self.consumer.position(
+                    [
+                        TopicPartition(
+                            topic=consume_topic, partition=consume_partition
+                        )
+                    ]
+                ),
+                self.consumer.consumer_group_metadata(),
+            )
+
+            # Commit the transaction
+            work_producer.commit_transaction()
+
+        except Exception as e:
+            self._logger.error(f"Commit Error: {e}")
+
+        finally:
+            if p_key in self.commit_lock:
+                self.commit_lock.remove(p_key)
+
+    def _payload_to_kafka_message(
         self,
         topic: str,
         msg: Message,
-        process_input: Callable[[KafkaMessage], None],
-    ):
+    ) -> Optional[KafkaMessage]:
         self._logger.info(
             "=== Processing message at input offset {} ===".format(
                 msg.offset()
@@ -197,10 +224,10 @@ class KafkaApp:
             json_data: dict = json.loads(data)
 
         except json.JSONDecodeError as e:
-            self._logger.info(f"Error decoding JSON: {e}")
+            self._logger.error(f"Error decoding JSON: {e}")
 
         except Exception as e:
-            self._logger.info(f"Error: {e}")
+            self._logger.error(f"Payload to Kafka Message Error: {e}")
 
         else:
             headers_data = {}
@@ -213,25 +240,33 @@ class KafkaApp:
             if msg.key() is not None:
                 key = msg.key().decode()
 
-            process_input(
-                KafkaMessage(
-                    topic=topic,
-                    key=key,
-                    headers=headers_data,
-                    payload=json_data,
-                )
+            message = KafkaMessage(
+                topic=topic,
+                key=key,
+                headers=headers_data,
+                payload=json_data,
             )
 
-    def _close(self):
-        self._logger.info("=== Commit transaction and close consumer ===")
-        self._commit()
+            return message
+
+    def close(self):
+        self._logger.info("=== Flush producers ===")
+
+        for ptid in self.producers.keys():
+            self.producers[ptid].flush()
+
+        self._logger.info("=== Close consumer ===")
         self.consumer.close()
 
-    def create_topic(self, topic_name: str):
+    def _create_topic(self, topic_name: str):
         """Create topics"""
 
         new_topics = [
-            NewTopic(topic_name, num_partitions=3, replication_factor=1)
+            NewTopic(
+                topic_name,
+                num_partitions=self.new_topic_config["num_partitions"],
+                replication_factor=self.new_topic_config["replication_factor"],
+            )
         ]
         # Call create_topics to asynchronously create topics, a dict
         # of <topic,future> is returned.
@@ -246,109 +281,150 @@ class KafkaApp:
                 f.result()  # The result itself is None
                 self._logger.info("Topic {} created".format(topic))
             except Exception as e:
-                self._logger.info(
+                self._logger.error(
                     "Failed to create topic {}: {}".format(topic, e)
                 )
 
-    def list_topics(self) -> List[str]:
+    def _list_topics(self, logging: bool = True) -> List[str]:
         """list topics, groups and cluster metadata"""
 
         md = self.admin_client.list_topics(timeout=10)
 
-        self._logger.info(
-            "Cluster {} metadata (response from broker {}):".format(
-                md.cluster_id, md.orig_broker_name
-            )
-        )
-
-        self._logger.info(" {} brokers:".format(len(md.brokers)))
-        for b in iter(md.brokers.values()):
-            if b.id == md.controller_id:
-                self._logger.info("  {}  (controller)".format(b))
-            else:
-                self._logger.info("  {}".format(b))
-
         topics = []
-        self._logger.info(" {} topics:".format(len(md.topics)))
         for t in iter(md.topics.values()):
             if t.error is not None:
                 errstr = ": {}".format(t.error)
             else:
                 errstr = ""
 
-            self._logger.info(
-                '  "{}" with {} partition(s){}'.format(
-                    t, len(t.partitions), errstr
+            if logging:
+                self._logger.info(
+                    '  "{}" with {} partition(s){}'.format(
+                        t, len(t.partitions), errstr
+                    )
                 )
-            )
-
-            # for p in iter(t.partitions.values()):
-            #     if p.error is not None:
-            #         errstr = ": {}".format(p.error)
-            #     else:
-            #         errstr = ""
-
-            #     self._logger.info("partition {} leader: {}, replicas: {},"
-            #           " isrs: {} errstr: {}".format(p.id, p.leader, p.replicas,
-            #                                         p.isrs, errstr))
 
             topics.append(str(t))
 
-        groups = self.admin_client.list_groups(timeout=10)
-        self._logger.info(" {} consumer groups".format(len(groups)))
-        for g in groups:
-            if g.error is not None:
-                errstr = ": {}".format(g.error)
-            else:
-                errstr = ""
-
-            self._logger.info(
-                ' "{}" with {} member(s), protocol: {}, protocol_type: {}{}'.format(
-                    g, len(g.members), g.protocol, g.protocol_type, errstr
-                )
-            )
-
-            # for m in g.members:
-            #     self._logger.info("id {} client_id: {} client_host: {}".format(
-            #         m.id, m.client_id, m.client_host))
-
         return topics
+
+    def _return_consume(
+        self, return_topic: str, request_id: str, produce: Callable[[], None]
+    ) -> KafkaMessage:
+
+        return_consumer_config = self.consumer_config.copy()
+        return_consumer_config.update(
+            {
+                "group.id": f"{self.service_name}-{request_id}",
+                "auto.offset.reset": "latest",
+                "enable.auto.commit": True,
+            }
+        )
+        return_consumer = Consumer(return_consumer_config)
+
+        existing_topics = self._list_topics(logging=False)
+        if return_topic not in existing_topics:
+            self._create_topic(return_topic)
+
+        return_consumer.subscribe([return_topic])
+
+        try:
+            message_sent = False
+            datetime_now = datetime.now()
+            datetime_timeout = datetime_now + timedelta(
+                seconds=self.response_timeout
+            )
+            while datetime_now < datetime_timeout:
+                datetime_now = datetime.now()
+                msg = return_consumer.poll(timeout=1.0)
+                if msg is None:
+                    continue
+
+                topic, partition = msg.topic(), msg.partition()
+                if msg.error():
+                    if msg.error().code() == KafkaError._PARTITION_EOF:
+                        self._logger.info(
+                            "=== Reached the end of {} [{}] at {}====".format(
+                                topic, partition, msg.offset()
+                            )
+                        )
+                        if not message_sent:
+                            produce()
+                            message_sent = True
+
+                        if self.topic_producer is not None:
+                            self._start_commit(self.topic_producer)
+
+                    continue
+
+                data = self._payload_to_kafka_message(topic, msg)
+
+                if (
+                    data is not None
+                    and data.headers["request_id"] == request_id
+                ):
+                    return data
+
+            raise RuntimeError("Timeout waiting for return message")
+
+        except Exception as e:
+            self._logger.error(f"Return Consume Error: {e}")
+            raise e
+
+        finally:
+            # Close down consumer to commit final offsets.
+            return_consumer.close()
+
+    def _consumer_on_assign(self, consumer, partitions: List[TopicPartition]):
+
+        for part in partitions:
+            topic = part.topic
+            partition_assign = part.partition
+
+            # Producer
+            producer_key = (
+                f"{self.service_name}-{topic}-{str(partition_assign)}"
+            )
+            producer_config = {
+                "transactional.id": producer_key,
+                "broker.version.fallback": "3.6.1",
+                "broker.address.family": "v4",
+            }
+            producer_config.update(self.basic_config)
+            self.producers[producer_key] = Producer(producer_config)
+
+            # Init transactions
+            self.producers[producer_key].init_transactions()
 
     def consume(
         self,
         topics: List[str],
         process_input: Callable[[KafkaMessage], None],
     ):
+
+        if len(topics) == 0:
+            self._logger.info("No topics to consume")
+            return
+
+        existing_topics = self._list_topics()
+
+        for tp in topics:
+            if tp not in existing_topics:
+                self._create_topic(tp)
+
+        self.consumer.subscribe(topics, on_assign=self._consumer_on_assign)
+
         try:
-            existing_topics = self.list_topics()
-
-            for tp in topics:
-                if tp not in existing_topics:
-                    self.create_topic(tp)
-
-            # Prior to KIP-447 being supported each input partition requires
-            # its own transactional producer, so in this example we use
-            # assign() to a single partition rather than subscribe().
-            # A more complex alternative is to dynamically create a producer per
-            # partition in subscribes rebalanced callback.
-            self.consumer.subscribe(topics)
-
-            # def exit_handler():
-            #     self._commit()
-            #     self.consumer.close()
-            #     self.producer.close()
-
-            # atexit.register(exit_handler)
-
             eof = {}
-            msg_cnt = 0
             self._logger.info(
                 "=== Starting Consume-Transform-Process loop ==="
             )
-            while True:
-                # self._logger.info("=== polling === {}".format(datetime.now()))
+            self.consumer_active = True
+            while self.consumer_active:
+
                 # serve delivery reports from previous produce()s
-                self.producer.poll(0)
+                for ptid in self.producers.keys():
+                    self.producers[ptid].poll(0)
 
                 # read message from input_topic
                 msg = self.consumer.poll(timeout=1.0)
@@ -364,29 +440,28 @@ class KafkaApp:
                                 topic, partition, msg.offset()
                             )
                         )
-
                         if len(eof) == len(self.consumer.assignment()):
                             self._logger.info("=== Reached end of input ===")
-                            # break
 
                     continue
 
                 # clear EOF if a new message has been received
                 eof.pop((topic, partition), None)
 
+                producer_key = f"{self.service_name}-{topic}-{str(partition)}"
+                self.producers[producer_key].begin_transaction()
+                self.topic_producer = producer_key
+
                 # process message
-                self.create_process(topic, msg, process_input)
+                message = self._payload_to_kafka_message(topic, msg)
 
-                msg_cnt += 1
-                if msg_cnt >= self._commit_after_received_message_count:
-                    self._logger.info(
-                        "=== Committing transaction with {} messages at input offset {} ===".format(
-                            msg_cnt, msg.offset()
-                        )
-                    )
+                if message is not None:
+                    process_input(message)
 
-                    self.commit_call.put_nowait(item=True)
-                    msg_cnt = 0
+                self._start_commit(producer_key)
 
-        finally:
-            self._close()
+        except Exception as e:
+            self.consumer_active = False
+            self._logger.error(f"Error: {str(e)}")
+            if "Consumer closed" not in str(e):
+                self.consumer.close()

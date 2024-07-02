@@ -213,22 +213,7 @@ class StopTransactionPayload:
 @dataclass(init=False)
 class ListOrderModel:
     keyword: Optional[str] = None
-    ev_driver_id: Optional[str] = None
-    transaction_id: Optional[str] = None
-    tenant_id: Optional[str] = None
-    role: Optional[str] = None
-
-    def __init__(self, **kwargs):
-        self.keyword = kwargs.get("keyword")
-        self.ev_driver_id = kwargs.get("ev_driver_id")
-        self.transaction_id = kwargs.get("transaction_id")
-        self.tenant_id = kwargs.get("tenant_id")
-        self.role = kwargs.get("role")
-
-
-@dataclass(init=False)
-class ListOrderResponseModel:
-
+    
     transaction_id: Optional[str] = None
     status: Optional[str] = None
     charge_point_id: Optional[str] = None
@@ -245,7 +230,11 @@ class ListOrderResponseModel:
     amount: Optional[str] = None
     transaction_detail: Optional[str] = None
 
+    tenant_id: Optional[str] = None
+    role: Optional[str] = None
+
     def __init__(self, **kwargs):
+        self.keyword = kwargs.get("keyword")
         self.transaction_id = kwargs.get("transaction_id")
         self.status = kwargs.get("status")
         self.charge_point_id = kwargs.get("charge_point_id")
@@ -261,6 +250,8 @@ class ListOrderResponseModel:
         self.charged_energy = kwargs.get("charged_energy")
         self.amount = str(kwargs.get("amount"))
         self.transaction_detail = kwargs.get("transaction_detail")
+        self.tenant_id = kwargs.get("tenant_id")
+        self.role = kwargs.get("role")
 
     def to_dict(self):
         return {

@@ -6,9 +6,12 @@ class Topic:
         self,
         name: str,
         data: dict,
-        headers: dict = {},
+        headers: Optional[dict] = None,
         return_topic: Optional[str] = None,
     ) -> None:
+        if headers is None:
+            headers = {}
+
         self.name = name
         self.data = data
         self.headers = headers
