@@ -38,11 +38,11 @@ class ListOrder:
                 Order.is_reservation,
                 Order.requires_payment,
                 Transaction.paid_by,
-                cast(Transaction.start_time, String).label("start_time"),
-                cast(Transaction.end_time, String).label("end_time"),
+                Transaction.start_time,
+                Transaction.end_time,
                 Transaction.duration,
                 Transaction.charged_energy,
-                cast(coalesce(Transaction.amount,0), Float).label("amount"),
+                coalesce(Transaction.amount,0).label("amount"),
                 Transaction.transaction_detail
             ).outerjoin(
                 Transaction, Order.transaction_id == Transaction.transaction_id
