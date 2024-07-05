@@ -24,11 +24,11 @@ class ResponseModel:
             "is_reservation": fields.Boolean(description="is_reservation", required=False),
             "requires_payment": fields.Boolean(description="payment_required", required=False),
             "paid_by": fields.String(description="paid_by", required=False),
-            "start_time": fields.DateTime(description="start_time", required=False),
-            "end_time": fields.DateTime(description="end_time", required=False),
+            "start_time": fields.String(description="start_time", required=False),
+            "end_time": fields.String(description="end_time", required=False),
             "duration": fields.Integer(description="duration", required=False),
             "charged_energy": fields.Float(description="charged_energy", required=False),
-            "amount": fields.Float(description="amount", required=False),
+            "amount": fields.String(description="amount", required=False),
             "transaction_detail": fields.String(description="transaction_detail", required=False),
             "total_cost": fields.Float(description="amount", required=False),
             "driver": fields.String(description="driver", required=False),
@@ -89,8 +89,8 @@ class RequestModel:
         return self.namespace.model("CreateOrderMobileRequestModel", data_models)
     
 
-    def create_order_rfid_reservation(self):
-        meta_model=self.namespace.model('meta_create_order_rfid_reservation',{
+    def create_order_reservation(self):
+        meta_model=self.namespace.model('meta_create_order_reservation',{
             "timestamp": fields.String(description="timestamp", required=False,default="2021-09-01 00:00:00"),
             "producer": fields.String(description="producer", required=False,default="OCPP as a Service"),
             "version": fields.String(description="version", required=False,default="ocpp_incoming_message"),
@@ -98,18 +98,15 @@ class RequestModel:
             "action": fields.String(description="action", required=False,default="ReserveNow"),
         })
 
-        evse_model=self.namespace.model('evse_create_order_rfid_reservation',{
+        evse_model=self.namespace.model('evse_create_order_reservation',{
             "charge_point_id": fields.String(description="charge_point_id", required=False,default="test_add_evse1"),
             "subprotocol": fields.String(description="subprotocol", required=False,default="ocpp1.6"),
         })
 
-        data_model=self.namespace.model('data_create_order_rfid_reservation',{
+        data_model=self.namespace.model('data_create_order_reservation',{
             "connector_id": fields.Integer(description="connector_id", required=False,default=0),
             "id_tag": fields.String(description="id_tag", required=False,default="MUserA"),
-            "timestamp": fields.String(description="timestamp", required=False,default="2021-09-01 00:00:00"),
-            "reservation_id": fields.Integer(description="reservation_id", required=False,default=0),
             "trigger_method": fields.String(description="trigger_method", required=False,default="make_reservation"),
-            "start_time": fields.String(description="start_time", required=False,default="2021-09-01 00:00:00"),
             "requires_payment": fields.Boolean(description="payment_required", required=False,default=False),
         })
 

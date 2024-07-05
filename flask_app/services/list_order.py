@@ -2,7 +2,7 @@ import json
 import os
 from flask_app.database_sessions import Database
 from flask_app.services.common_function import DataValidation
-from flask_app.services.models import ListOrderModel, ListOrderResponseModel
+from flask_app.services.models import ListOrderModel
 from microservice_utils.settings import logger
 from kafka_app.kafka_management.topic_enum import MsEvDriverManagement, MsPaymentManagement
 from sqlalchemy import Float, String, and_, case, func, literal_column, or_, cast
@@ -65,8 +65,7 @@ class ListOrder:
             append_count = 0
             for order in order_list:
                 append_ind = False
-                order = ListOrderResponseModel(**order._asdict())
-                logger.info(order)
+                order = ListOrderModel(**order._asdict())
 
                 if data.keyword is not None:
                     if order.search_keyword(data.keyword):
@@ -79,6 +78,12 @@ class ListOrder:
                     order = order.__dict__
                     order["row_count"] = append_count
                     list_order.append(order)
+
+            # formatted_results = []
+            # for order in list_order:
+            #     if list_order['start_time'] or list_order['end_time']:
+            #         list_order['start_time'] = list_order['start_time'].isoformat()
+                # formatted_results.append(formatted_result)
 
             return {"data": list_order}
         except Exception as e:

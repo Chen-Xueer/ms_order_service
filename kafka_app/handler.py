@@ -1,6 +1,6 @@
 import datetime
 import json
-from flask_app.services.common_function import DataValidation
+from flask_app.services.common_function import DataValidation, kafka_out
 from microservice_utils.settings import logger
 from kafka_app.kafka_management.topic_enum import MsOrderManagement, MsEvDriverManagement,MsPaymentManagement,MsCSMSManagement
 from flask_app.services.models import KafkaPayload, ListOrderModel
@@ -35,7 +35,7 @@ def handler(message: KafkaMessage):
             from flask_app.services.create_order import CreateOrder
             create_order = CreateOrder()            
             data = KafkaPayload(**data)
-            create_order.create_order_rfid(data = data)
+            create_order.create_order(data = data)
 
         if message.topic == MsOrderManagement.REJECT_ORDER.value:
             update_order = UpdateOrder()   
@@ -62,14 +62,8 @@ def handler(message: KafkaMessage):
                 "meta": data["meta"],
                 "data": response
             }
-            from kafka_app.main import kafka_app
-            kafka_app.send(
-                topic=Topic(
-                    name=MsOrderManagement.LIST_ORDER_RESPONSE.value,
-                    data=output,
-                ),
-                request_id=message.headers["request_id"]
-            )            
+            kafka_out(topic=MsOrderManagement.LIST_ORDER_RESPONSE.value, data=output, request_id=message.headers["request_id"])
+                       
     except Exception as e:
         session.rollback()
         logger.error(e)

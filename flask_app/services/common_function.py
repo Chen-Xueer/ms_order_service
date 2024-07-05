@@ -91,11 +91,10 @@ class DataValidation:
         return transaction_exists
 
 
+
 def kafka_out(topic: str, data: dict, request_id: str):
     from kafka_app.main import kafka_app
     from kafka_app.kafka_management.kafka_topic import Topic
-    logger.info("###################")
-    logger.info(f"KAFKA OUT: {data}")
 
     try:
         kafka_app.send(
@@ -106,5 +105,26 @@ def kafka_out(topic: str, data: dict, request_id: str):
             request_id=request_id
         )
     except Exception as e:
-        print(f"Error publishing message to Kafka broker: {e}")
+        logger.error(f"Error publishing message to Kafka broker: {e}")
+
+
+def kafka_out_wait_response(topic: str, data: dict, return_topic:str):
+    from kafka_app.main import kafka_app
+    from kafka_app.kafka_management.kafka_topic import Topic
+    try:
+
+        response = kafka_app.send(
+                        topic=Topic(
+                            name=topic,
+                            data=data,
+                            return_topic=return_topic,
+                        )
+                    )
+        logger.info("###############################")
+        logger.info(f"Response from Kafka: {response}")
+        return response
+    except Exception as e:
+        logger.error(f"Error publishing message to Kafka broker: {e}")
+        return None
+
 
