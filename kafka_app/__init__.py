@@ -5,7 +5,7 @@ from kafka_app.kafka_management.topic_enum import MsEvDriverManagement,MsPayment
 def app_init():
     from kafka_app.main import kafka_app
 
-    # kafka_app.admin_client.delete_topics([MsOrderManagement.LIST_ORDER_REQUEST.value, MsOrderManagement.LIST_ORDER_RESPONSE.value, "ListOrderRequest1"])
+    # kafka_app.admin_client.delete_topics([])
 
     kafka_app.consume(
         [

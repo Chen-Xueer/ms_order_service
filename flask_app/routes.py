@@ -50,13 +50,13 @@ class remote_start(Resource):
         create_order.remote_start_payload(data=KafkaPayload(**data))
 
 # PATH: /orderservice/mobile/make_reservation
-@ns_mobile.route("make_reservation/<string:mobile_id>")
+@ns_mobile.route("make_reservation")
 class make_reservation(Resource):
     #@ns_mobile.doc(security="Authorization")
     #@permission_required()
-    @ns_mobile.expect(request_model.create_order_rfid_reservation(), validate=True)
+    @ns_mobile.expect(request_model.create_order_reservation(), validate=True)
     @ns_mobile.marshal_with(response_model.create_order(), skip_none=True)
-    def post(self,mobile_id):
+    def post(self):
         
         #claims = decode_token(get_token())
 
@@ -66,7 +66,7 @@ class make_reservation(Resource):
         logger.info(f"Request data: {data}")
 
         create_order = CreateOrder()
-        create_order.create_order_mobile_id(mobile_id=mobile_id,data=KafkaPayload(**data))
+        create_order.create_order(data=KafkaPayload(**data))
 
 # PATH: /orderservice/mobile/stop_transaction
 @ns_mobile.route("stop_transaction/<string:mobile_id>")
