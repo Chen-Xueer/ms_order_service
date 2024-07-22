@@ -4,19 +4,23 @@ class MsEvDriverManagement(enum.Enum):
     DRIVER_VERIFICATION_REQUEST = "DriverVerificationRequest"
     DRIVER_VERIFICATION_RESPONSE = "DriverVerificationResponse"
 
-class MsOrderManagement(enum.Enum):
-    CREATE_ORDER = "CreateOrder"
-    CREATE_ORDER_RESPONSE = "CreateOrderResponse"
-    REJECT_ORDER = "RejectOrder"
-    STOP_TRANSACTION = "StopTransaction"
-    LIST_ORDER_REQUEST = "ListOrderRequest"
-    LIST_ORDER_RESPONSE = "ListOrderResponse"
-
 class MsPaymentManagement(enum.Enum):
     AUTHORIZE_PAYMENT_REQUEST = "AuthorizePaymentRequest"
     AUTHORIZE_PAYMENT_RESPONSE = "AuthorizePaymentResponse"
     CANCEL_PAYMENT_REQUEST = "CancelPaymentRequest"
     CANCEL_PAYMENT_RESPONSE = "CancelPaymentResponse"
+
+class MsOrderManagement(enum.Enum):
+    CREATE_ORDER = "CreateOrder"
+    CREATE_ORDER_RESPONSE = "CreateOrderResponse"
+    REJECT_ORDER = "RejectOrder"
+    REJECT_ORDER_SUCCESS = "OrderRejected"
+    LIST_ORDER_REQUEST = "ListOrderRequest"
+    LIST_ORDER_RESPONSE = "ListOrderResponse"
+
+    STOP_TRANSACTION = "StopTransaction"
+    
+
 
 class MsCSMSManagement(enum.Enum):
     SECURITY_REQUEST = "SecurityRequest"

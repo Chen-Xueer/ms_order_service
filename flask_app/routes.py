@@ -50,7 +50,7 @@ class remote_start(Resource):
         create_order.remote_start_payload(data=KafkaPayload(**data))
 
 # PATH: /orderservice/mobile/make_reservation
-@ns_mobile.route("make_reservation")
+@ns_mobile.route("make_reservation/<string:mobile_id>")
 class make_reservation(Resource):
     #@ns_mobile.doc(security="Authorization")
     #@permission_required()
@@ -73,7 +73,7 @@ class make_reservation(Resource):
 class stop_transaction(Resource):
     #@ns_mobile.doc(security="Authorization")
     #@permission_required()
-    @ns_mobile.expect(request_model.create_order_rfid_stop_transaction(), validate=True)
+    @ns_mobile.expect(request_model.create_order_stop_transaction(), validate=True)
     @ns_mobile.marshal_with(response_model.create_order(), skip_none=True)
     def post(self,mobile_id):
         
@@ -143,7 +143,7 @@ class transaction_breakdown(Resource):
 class authorize(Resource):
     #@ns_kafka.doc(security="Authorization")
     #@permission_required()
-    @ns_kafka.expect(request_model.create_order_rfid_authorize(), validate=True)
+    @ns_kafka.expect(request_model.create_order_authorize(), validate=True)
     @ns_kafka.marshal_with(response_model.create_order(), skip_none=True)
     def post(self):
         
@@ -154,4 +154,40 @@ class authorize(Resource):
         logger.info(f"Request data: {data}")
 
         create_order = CreateOrder()
-        create_order.create_order_rfid(data=KafkaPayload(**data))
+        return create_order.create_order(data=KafkaPayload(**data))
+
+# PATH: /orderservice/mobile/remote_start
+@ns_kafka.route("remote_start")
+class remote_start(Resource):
+    #@ns_kafka.doc(security="Authorization")
+    #@permission_required()
+    @ns_kafka.expect(request_model.create_order_remote_start(), validate=True)
+    @ns_kafka.marshal_with(response_model.create_order(), skip_none=True)
+    def post(self):
+        
+        #claims = decode_token(get_token())
+        data = request.json
+        data.get("meta").update({"request_id":str(uuid.uuid4())})
+        data.get("data").update({"tenant_id":str(claims.get("custom:tenant_id"))})
+        logger.info(f"Request data: {data}")
+
+        create_order = CreateOrder()
+        return create_order.remote_start_payload(data=KafkaPayload(**data))
+
+# PATH: /orderservice/mobile/make_reservation
+@ns_kafka.route("make_reservation")
+class make_reservation(Resource):
+    #@ns_mobile.doc(security="Authorization")
+    #@permission_required()
+    @ns_kafka.expect(request_model.create_order_reservation(), validate=True)
+    @ns_kafka.marshal_with(response_model.create_order(), skip_none=True)
+    def post(self):
+        #claims = decode_token(get_token())
+
+        data = request.json
+        data.get("meta").update({"request_id":str(uuid.uuid4())})
+        data.get("data").update({"tenant_id":str(claims.get("custom:tenant_id"))})
+        logger.info(f"Request data: {data}")
+
+        create_order = CreateOrder()
+        create_order.create_order(data=KafkaPayload(**data))

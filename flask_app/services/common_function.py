@@ -53,9 +53,9 @@ class DataValidation:
             return {"error_description": {field_name: f"{field_name} is required"}, "status_code": 400}
         return {}
     
-    def validate_transaction_id(self,transaction_id,trigger_method):
+    def validate_transaction_id(self,transaction_id,action):
         logger.info(f"transaction_id: {transaction_id}")
-        if trigger_method in (TriggerMethod.AUTHORIZE.value,TriggerMethod.START_TRANSACTION.value):
+        if action in (TriggerMethod.AUTHORIZE.value,TriggerMethod.START_TRANSACTION.value):
             return {}
         else:
             if transaction_id is None:

@@ -12,14 +12,14 @@ def test_update_order_none():
     data = Mock(spec=KafkaPayload)
     data.expiry_date = None
     data.transaction_id = '123'
-    data.trigger_method = TriggerMethod.START_TRANSACTION.value
+    data.meta.action = TriggerMethod.START_TRANSACTION.value
     data.meta = Mock(spec=KafkaMeta)
     data.meta.request_id = '456'
 
     # Mock the methods of DataValidation and CreateOrder classes
     with patch('flask_app.services.update_order.DataValidation.validate_order', return_value=None) as mock_validate_order, \
          patch('flask_app.services.update_order.DataValidation.validate_order_request', return_value=None) as mock_validate_order_request, \
-         patch('flask_app.services.create_order.CreateOrder.create_order_rfid', return_value=None) as mock_create_order_rfid:
+         patch('flask_app.services.create_order.CreateOrder.create_order', return_value=None) as mock_create_order:
 
         update_order = UpdateOrder()
         result = update_order.update_order(data, cancel_ind=False)
@@ -30,8 +30,8 @@ def test_update_order_none():
         # Check if the validate_order_request method was called with the correct argument
         mock_validate_order_request.assert_called_once_with(request_id='456')
 
-        # Check if the create_order_rfid method was called with the correct argument
-        mock_create_order_rfid.assert_called_once_with(data=data)
+        # Check if the create_order method was called with the correct argument
+        mock_create_order.assert_called_once_with(data=data)
 
         # Check if the result is None
         assert result is None
@@ -43,7 +43,7 @@ def test_update_order_start_transaction():
     data.transaction_id = '123'
     data.id_tag = 'RFID_001'
     data.status = OrderStatus.AUTHORIZED.value
-    data.trigger_method = TriggerMethod.START_TRANSACTION.value
+    data.meta.action = TriggerMethod.START_TRANSACTION.value
     data.meta = Mock(spec=KafkaMeta)
     data.meta.request_id = '456'
     data.meta.producer = ProducerTypes.OCPP_AS_SERVICE.value
@@ -79,7 +79,7 @@ def test_update_order_start_transaction():
     # Mock the methods of DataValidation and CreateOrder classes
     with patch('flask_app.services.update_order.DataValidation.validate_order', return_value=None) as mock_validate_order, \
          patch('flask_app.services.update_order.DataValidation.validate_order_request', return_value=None) as mock_validate_order_request, \
-         patch('flask_app.services.create_order.CreateOrder.create_order_rfid', return_value=mock_order) as mock_create_order_rfid, \
+         patch('flask_app.services.create_order.CreateOrder.create_order', return_value=mock_order) as mock_create_order, \
          patch('flask_app.services.update_order.DataValidation.validate_transaction', return_value=mock_transaction) as mock_validate_transaction, \
          patch('flask_app.services.update_order.Database.init_session', return_value=mock_session) as mock_init_session, \
          patch.object(mock_session, 'filter', return_value=mock_filter) as filter_mock, \
@@ -95,8 +95,8 @@ def test_update_order_start_transaction():
         # Check if the validate_order_request method was called with the correct argument
         mock_validate_order_request.assert_called_once_with(request_id='456')
 
-        # Check if the create_order_rfid method was called with the correct argument
-        mock_create_order_rfid.assert_called_once_with(data=data)
+        # Check if the create_order method was called with the correct argument
+        mock_create_order.assert_called_once_with(data=data)
 
         # Check if the validate_transaction method was called with the correct argument
         mock_validate_transaction.assert_called_once_with(transaction_id='123')

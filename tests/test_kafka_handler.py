@@ -13,7 +13,7 @@ from kafka_app.kafka_management.kafka_topic import KafkaMessage
 #        "data": {
 #            "trigger_method": "valid_trigger_method",
 #            "transaction_id": 123,
-#            "payment_required": "valid_payment_required",
+#            "requires_payment": "valid_requires_payment",
 #            "id_tag": "valid_id_tag",
 #            "cognito_user_id": "valid_cognito_user_id"
 #        },
@@ -42,7 +42,7 @@ def test_validate_request(mock_data_validation):
         "data": {
             "trigger_method": "valid_trigger_method",
             "transaction_id": 123,
-            "payment_required": "valid_payment_required",
+            "requires_payment": "valid_requires_payment",
             "id_tag": "valid_id_tag",
             "cognito_user_id": "valid_cognito_user_id"
         },

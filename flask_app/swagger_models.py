@@ -22,7 +22,7 @@ class ResponseModel:
             "ev_driver_id": fields.String(description="driver_id", required=False),
             "is_charging": fields.Boolean(description="is_charging", required=False),
             "is_reservation": fields.Boolean(description="is_reservation", required=False),
-            "requires_payment": fields.Boolean(description="payment_required", required=False),
+            "requires_payment": fields.Boolean(description="requires_payment", required=False),
             "paid_by": fields.String(description="paid_by", required=False),
             "start_time": fields.String(description="start_time", required=False),
             "end_time": fields.String(description="end_time", required=False),
@@ -66,7 +66,8 @@ class RequestModel:
             "producer": fields.String(description="producer", required=False,default="OCPP as a Service"),
             "version": fields.String(description="version", required=False,default="ocpp_incoming_message"),
             "type": fields.String(description="type", required=False,default="CreateOrder"),
-            "action": fields.String(description="action", required=False,default="CreateOrder"),
+            "action": fields.String(description="action", required=False,default="RemoteStartTransaction"),
+            "tenant_id": fields.String(description="tenant_id", required=False,default="9d6cb027-ad74-4635-987c-e54b734c3516"),
         })
 
         evse_model=self.namespace.model('evse_create_order',{
@@ -76,9 +77,7 @@ class RequestModel:
 
         data_model=self.namespace.model('data_create_order',{
             "connector_id": fields.Integer(description="connector_id", required=False,default=1),
-            "id_tag": fields.String(description="id_tag", required=False,default="MUserA"),
-            "trigger_method": fields.String(description="trigger_method", required=False,default="remote_start"),
-
+            "id_tag": fields.String(description="id_tag", required=False,default="xnxpapqidmjsts3twlws"),
         })
 
         data_models = {
@@ -92,10 +91,11 @@ class RequestModel:
     def create_order_reservation(self):
         meta_model=self.namespace.model('meta_create_order_reservation',{
             "timestamp": fields.String(description="timestamp", required=False,default="2021-09-01 00:00:00"),
-            "producer": fields.String(description="producer", required=False,default="OCPP as a Service"),
+            "producer": fields.String(description="producer", required=False,default="oneems_charger_management"),
             "version": fields.String(description="version", required=False,default="ocpp_incoming_message"),
             "type": fields.String(description="type", required=False,default="ReservationRequest"),
             "action": fields.String(description="action", required=False,default="ReserveNow"),
+            "tenant_id": fields.String(description="tenant_id", required=False,default="9d6cb027-ad74-4635-987c-e54b734c3516"),
         })
 
         evse_model=self.namespace.model('evse_create_order_reservation',{
@@ -105,9 +105,8 @@ class RequestModel:
 
         data_model=self.namespace.model('data_create_order_reservation',{
             "connector_id": fields.Integer(description="connector_id", required=False,default=0),
-            "id_tag": fields.String(description="id_tag", required=False,default="MUserA"),
-            "trigger_method": fields.String(description="trigger_method", required=False,default="make_reservation"),
-            "requires_payment": fields.Boolean(description="payment_required", required=False,default=False),
+            "id_tag": fields.String(description="id_tag", required=False,default="xnxpapqidmjsts3twlws"),
+            "requires_payment": fields.Boolean(description="requires_payment", required=False,default=False),
         })
 
         data_models = {
@@ -117,7 +116,7 @@ class RequestModel:
         }
         return self.namespace.model("CreateOrderRfidReservationRequestModel", data_models)
     
-    def create_order_rfid_stop_transaction(self):
+    def create_order_stop_transaction(self):
         meta_model=self.namespace.model('meta_create_order_stop_transaction',{
             "timestamp": fields.String(description="timestamp", required=False,default="2021-09-01 00:00:00"),
             "producer": fields.String(description="producer", required=False,default="OCPP as a Service"),
@@ -126,19 +125,18 @@ class RequestModel:
             "action": fields.String(description="action", required=False,default="RemoteStopTransaction"),
         })
 
-        evse_model=self.namespace.model('evse_create_order_rfid_stop_transaction',{
+        evse_model=self.namespace.model('evse_create_order_stop_transaction',{
             "charge_point_id": fields.String(description="charge_point_id", required=False,default="test_add_evse1"),
             "subprotocol": fields.String(description="subprotocol", required=False,default="ocpp1.6"),
         })
 
-        data_model=self.namespace.model('data_create_order_rfid_stop_transaction',{
+        data_model=self.namespace.model('data_create_order_stop_transaction',{
             "meter_stop": fields.Integer(description="meter_stop", required=False,default=0),
-            "id_tag": fields.String(description="id_tag", required=False,default="MUserA"),
+            "id_tag": fields.String(description="id_tag", required=False,default="xnxpapqidmjsts3twlws"),
             "timestamp": fields.String(description="timestamp", required=False,default="2021-09-01 00:00:00"),
             "transaction_id": fields.Integer(description="transaction_id", required=False,default=0),
             "reason": fields.String(description="reason", required=False,default="Remote"),
             "transaction_data": fields.String(description="transaction_data", required=False,default=""),
-            "trigger_method": fields.String(description="trigger_method", required=False,default="stop_transaction"),
         })
 
         data_models = {
@@ -155,23 +153,23 @@ class RequestModel:
         return self.namespace.model("ListOrderRequestModel", data_models)
     
 
-    def create_order_rfid_authorize(self):
-        meta_model=self.namespace.model('meta_create_order_rfid_authorize',{
+    def create_order_authorize(self):
+        meta_model=self.namespace.model('meta_create_order_authorize',{
             "timestamp": fields.String(description="timestamp", required=False,default="2021-09-01 00:00:00"),
             "producer": fields.String(description="producer", required=False,default="OCPP as a Service"),
             "version": fields.String(description="version", required=False,default="ocpp_incoming_message"),
             "type": fields.String(description="type", required=False,default="AuthorizeRequest"),
             "action": fields.String(description="action", required=False,default="Authorize"),
+            "tenant_id": fields.String(description="tenant_id", required=False,default="9d6cb027-ad74-4635-987c-e54b734c3516"),
         })
 
-        evse_model=self.namespace.model('evse_create_order_rfid_authorize',{
+        evse_model=self.namespace.model('evse_create_order_authorize',{
             "charge_point_id": fields.String(description="charge_point_id", required=False,default="test_add_evse1"),
             "subprotocol": fields.String(description="subprotocol", required=False,default="ocpp1.6"),
         })
 
-        data_model=self.namespace.model('data_create_order_rfid_authorize',{
-            "id_tag": fields.String(description="id_tag", required=False,default="MUserA"),
-            "trigger_method": fields.String(description="trigger_method", required=False,default="authorize"),
+        data_model=self.namespace.model('data_create_order_authorize',{
+            "id_tag": fields.String(description="id_tag", required=False,default="xnxpapqidmjsts3twlws"),
         })
 
         data_models = {
@@ -179,7 +177,34 @@ class RequestModel:
             "evse": fields.Nested(evse_model,description="evse", required=False,skip_none=True),
             "data": fields.Nested(data_model,description="data", required=False,skip_none=True),
         }
-        return self.namespace.model("CreateOrderRfidRequestModel", data_models)
+        return self.namespace.model("CreateOrderAuthorizeRequestModel", data_models)
+
+    def create_order_remote_start(self):
+        meta_model=self.namespace.model('meta_create_order_remote_start',{
+            "timestamp": fields.String(description="timestamp", required=False,default="2021-09-01 00:00:00"),
+            "producer": fields.String(description="producer", required=False,default="oneems_charger_management"),
+            "version": fields.String(description="version", required=False,default="ocpp_incoming_message"),
+            "type": fields.String(description="type", required=False,default="CreateOrder"),
+            "action": fields.String(description="action", required=False,default="RemoteStartTransaction"),
+            "tenant_id": fields.String(description="tenant_id", required=False,default="9d6cb027-ad74-4635-987c-e54b734c3516"),
+        })
+
+        evse_model=self.namespace.model('evse_create_order_remote_start',{
+            "charge_point_id": fields.String(description="charge_point_id", required=False,default="SGEVCharger"),
+            "subprotocol": fields.String(description="subprotocol", required=False,default="ocpp1.6"),
+        })
+
+        data_model=self.namespace.model('data_create_order_remote_start',{
+            "connector_id": fields.Integer(description="connector_id", required=False,default=1),
+            "id_tag": fields.String(description="id_tag", required=False,default="xnxpapqidmjsts3twlws"),
+        })
+
+        data_models = {
+            "meta": fields.Nested(meta_model,description="meta", required=False,skip_none=True),
+            "evse": fields.Nested(evse_model,description="evse", required=False,skip_none=True),
+            "data": fields.Nested(data_model,description="data", required=False,skip_none=True),
+        }
+        return self.namespace.model("CreateOrderRemoteStartRequestModel", data_models)
 
 
     def none_data(self):

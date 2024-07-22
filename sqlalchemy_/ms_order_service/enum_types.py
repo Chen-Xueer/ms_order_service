@@ -8,22 +8,6 @@ class RoleType(enum.Enum):
     DRIVER = 'Driver'
     OPERATOR = 'Operator'
 
-class OrderStatus(enum.Enum):
-    CREATED = 'Created'
-    AUTHORIZED = 'Authorized'
-    AUTHORIZEDFAILED = 'AuthorizationFailed'
-    CHARGING = 'Charging'
-    RESERVING = 'Reserving'
-    CANCELLED = 'Cancelled'
-    COMPLETED = 'Completed'
-
-class DriverStatus(enum.Enum):
-    ACCEPTED = 'Accepted'
-    BLOCKED = 'Blocked'
-    EXPIRED = 'Expired'
-    INVALID = 'Invalid'
-    CONCURRENT = 'ConcurrentTx'
-
 class ReturnActionStatus(enum.Enum):
     CREATED = 'created'
     COMPLETED = 'completed'
@@ -36,18 +20,34 @@ class ReturnStatus(enum.Enum):
 class ProducerTypes(enum.Enum):
     EVSE_AS_SERVICE = "EVSE as a Service"
     OCPP_AS_SERVICE = "OCPP as a Service"
+    CHARGER_MGMT = 'oneems_charger_management'
     CSMS_AS_SERVICE = "CSMS as a Service"
     ORDER_SERVICE = "Order Service"
 
+class DriverStatus(enum.Enum):
+    ACCEPTED = 'Accepted'
+    BLOCKED = 'Blocked'
+    EXPIRED = 'Expired'
+    INVALID = 'Invalid'
+    CONCURRENT = 'ConcurrentTx'
+
+class OrderStatus(enum.Enum):
+    CREATED = 'Created'
+    AUTHORIZED = 'Authorized'
+    AUTHORIZEDFAILED = 'AuthorizationFailed'
+    PREPARECHARGING = 'PendingToStartCharging'
+    CHARGING = 'Charging'
+    RESERVING = 'Reserving'
+    CANCELLED = 'Cancelled'
+    COMPLETED = 'Completed'
 
 class TriggerMethod(enum.Enum):
-    AUTHORIZE = 'authorize'
-    START_TRANSACTION = 'start_transaction'
-    REMOTE_START = 'remote_start'
-    MAKE_RESERVATION = 'make_reservation'
-    STOP_TRANSACTION = 'stop_transaction'
-    CANCEL_ORDER = 'cancel_order'
-
+    AUTHORIZE = 'Authorize'
+    START_TRANSACTION = 'StartTransaction'
+    REMOTE_START = 'RemoteStartTransaction'
+    MAKE_RESERVATION = 'ReserveNow'
+    STOP_TRANSACTION = 'RemoteStopTransaction'
+    CANCEL_ORDER = 'CancelOrder'
 
 class StopTransactionReason(enum.Enum):
     emergency_stop = "EmergencyStop"

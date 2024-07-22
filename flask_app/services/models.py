@@ -11,6 +11,7 @@ class KafkaMeta:
     action: Optional[str] = None
     producer: Optional[str] = None
     request_id: Optional[str] = None
+    tenant_id: Optional[str] = None
 
     def __init__(self, **kwargs):
         self.timestamp = kwargs.get("timestamp")
@@ -19,6 +20,7 @@ class KafkaMeta:
         self.action = kwargs.get("action")
         self.producer = kwargs.get("producer")
         self.request_id = kwargs.get("request_id")
+        self.tenant_id = kwargs.get("tenant_id")
     
     def to_dict(self):
         return {
@@ -27,7 +29,8 @@ class KafkaMeta:
             "type": self.meta_type,
             "action": self.action,
             "producer": self.producer,
-            "request_id": self.request_id
+            "request_id": self.request_id,
+            "tenant_id": self.tenant_id
         }
 
 @dataclass(init=False)
@@ -55,11 +58,11 @@ class KafkaPayload:
     is_reservation: Optional[bool] = None
     requires_payment: Optional[bool] = None
     tenant_id: Optional[str] = None
-    trigger_method: Optional[str] = None
     status_code: Optional[str] = None
     id_tag_status: Optional[str] = None
     expiry_date: Optional[str] = None
     keyword: Optional[str] = None
+    status: Optional[str] = None
 
     def __init__(self, **kwargs):
         self.meta = KafkaMeta(**kwargs.get("meta", {}))
@@ -73,11 +76,11 @@ class KafkaPayload:
         self.is_reservation = data.get("is_reservation")
         self.requires_payment = data.get("requires_payment")
         self.tenant_id = data.get("tenant_id")
-        self.trigger_method = data.get("trigger_method")
         self.status_code = data.get("status_code")
         self.id_tag_status = data.get("id_tag_status")
         self.expiry_date = data.get("expiry_date")
         self.keyword = data.get("keyword")
+        self.status = data.get("status")
         
     
     def to_dict(self):
@@ -85,21 +88,34 @@ class KafkaPayload:
             "meta": self.meta.to_dict(),
             "evse": self.evse.to_dict(),
             "data": {
-                "transaction_id": self.transaction_id,
-                "connector_id": self.connector_id,
-                "start_time": self.start_time,
-                "id_tag": self.id_tag,
-                "is_charging": self.is_charging,
-                "is_reservation": self.is_reservation,
-                "requires_payment": self.requires_payment,
-                "tenant_id": self.tenant_id,
-                "trigger_method": self.trigger_method,
-                "status_code": self.status_code,
-                "id_tag_status": self.id_tag_status,
-                "expiry_date": self.expiry_date 
+                key: value for key, value in {
+                    "transaction_id": self.transaction_id,
+                    "connector_id": self.connector_id,
+                    "start_time": self.start_time,
+                    "id_tag": self.id_tag,
+                    "is_charging": self.is_charging,
+                    "is_reservation": self.is_reservation,
+                    "requires_payment": self.requires_payment,
+                    "tenant_id": self.tenant_id,
+                    "status_code": self.status_code,
+                    "id_tag_status": self.id_tag_status,
+                    "expiry_date": self.expiry_date,
+                    "status": self.status,
+                }.items() if value is not None
             }
         }
 
+
+@dataclass(init=False)
+class ValidateKafkaMessageModel:
+    action: Optional[str] = None
+    status: Optional[str] = None
+    
+    def count_errors(self):
+        return len([k for k, v in asdict(self).items() if v is not None])
+
+    def to_dict(self):
+        return {k: v for k, v in asdict(self).items() if v is not None}
 
 @dataclass(init=False)
 class ReservationPayload:

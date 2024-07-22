@@ -8,38 +8,38 @@ boundary OrderService       #LightSteelBlue
 database OrderServiceDB     #LightSteelBlue
 boundary EVDriverService    #Lavender
 boundary PaymentService     #Lavender
-group #LightBlue MobileUser
-    MobileAppService -> OrderService: [API] MsOrderManagement.CreateOrder
-else #CadetBlue OtherUser
-    CSMSService -> OrderService: [Kafka] MsOrderManagement.CreateOrder
+group #LightBlue Mobile
+    MobileAppService -> OrderService: [API-API] CreateOrder
+else #CadetBlue Web
+    EVSEMgmt -> OrderService: [Kafka-Kafka] CreateOrder
 end
-OrderService -> EVDriverService : [Kafka] MsEvDriverManagement.DriverVerificationRequest
+OrderService -> EVDriverService : [Kafka-Kafka] DriverVerificationRequest
 EVDriverService -> EVDriverService : verify driver
-EVDriverService -> OrderService : [Kafka] MsEvDriverManagement.DriverVerificationResponse
+EVDriverService -> OrderService : [Kafka-Kafka] DriverVerificationResponse
 group #IndianRed DRIVER VERIFICATION FAILED
     group #LightBlue MobileUser
-        OrderService -> EVSEMgmt: [Kafka] EVSEMgmt.AuthorizeResponse
+        OrderService -> EVSEMgmt: [Kafka-Kafka] CreateOrderResponse
     else #CadetBlue OtherUser
-        OrderService -> CSMSService: [Kafka] CSMSService.AuthorizeResponse
+        OrderService -> CSMSService: [Kafka-Kafka] CreateOrderResponse
     end
 else #DarkSeaGreen DRIVER VERIFICATION SUCCESS
-    group #LightSteelBlue PAYMENT_REQUIRED = FALSE
+    group #LightSteelBlue requires_payment = FALSE
         group #LightBlue MobileUser    
-                OrderService -> EVSEMgmt: [Kafka] EVSEMgmt.AuthorizeResponse
+                OrderService -> EVSEMgmt: [Kafka-Kafka] CreateOrderResponse
         else #CadetBlue OtherUser
-            OrderService -> CSMSService: [Kafka] CSMSService.AuthorizeResponse
+            OrderService -> CSMSService: [Kafka-Kafka] CreateOrderResponse
         end
-    else #LightSteelBlue PAYMENT_REQUIRED = TRUE 
-        EVDriverService -> PaymentService: [Kafka] MsPaymentService.AuthorizePaymentRequest
+    else #LightSteelBlue requires_payment = TRUE 
+        EVDriverService -> PaymentService: [Kafka-Kafka] AuthorizePaymentRequest
         group #DarkSeaGreen AUTHORIZE_PAYMENT = SUCCESS
-            PaymentService --> OrderService: [Kafka] MsPaymentService.AuthorizePaymentResponse
+            PaymentService --> OrderService: [Kafka-Kafka] AuthorizePaymentResponse
         else #IndianRed AUTHORIZE_PAYMENT = FALSE
-            PaymentService -> EVDriverService: [Kafka] MsPaymentService.AuthorizePaymentResponse
-            EVDriverService -> OrderService: [Kafka] MsOrderManagement.RejectOrder
+            PaymentService -> EVDriverService: [Kafka-Kafka] AuthorizePaymentResponse
+            EVDriverService -> OrderService: [Kafka-Kafka] RejectOrder
             group #LightBlue MobileUser    
-                OrderService -> EVSEMgmt: [Kafka] EVSEMgmt.CancelTransaction
+                OrderService -> EVSEMgmt: [Kafka-Kafka] OrderRejected
             else #CadetBlue OtherUser
-                OrderService -> CSMSService: [Kafka] CSMSService.CancelTransaction
+                OrderService -> CSMSService: [Kafka-Kafka] OrderRejected
             end
         end
     end

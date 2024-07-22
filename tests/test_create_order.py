@@ -72,62 +72,12 @@ def test_db_insert_transaction(mock_logger):
     assert result["message"] == "insert transaction failed"
     assert result["action"] == "transaction_creation"
 
-@patch('flask_app.services.create_order.DataValidation.validate_tenants')
-@patch('flask_app.services.create_order.CreateOrder.db_insert_order', autospec=True)
-@patch('flask_app.services.create_order.CreateOrder.db_insert_transaction', autospec=True)
-@patch('flask_app.services.create_order.kafka_out', autospec=True)
-def test_create_order_mobile_id(mock_kafka_out, mock_db_insert_transaction, mock_db_insert_order,mock_validate_tenants):
-    create_order = CreateOrder()
-
-    mock_validate_tenants.return_value = Tenant()
-
-    # Mock the db_insert_order and db_insert_transaction methods
-    mock_db_insert_order.return_value = Order()
-    mock_db_insert_transaction.return_value = Transaction()
-
-    # Mock the kafka_out method
-    mock_kafka_out.return_value = None
-
-    # Test when order and transaction creation is successful
-    mobile_id = "mobile1"
-    data = KafkaPayload()
-    tenant_id = "tenant1"
-    result = create_order.create_order_mobile_id(mobile_id, data, tenant_id)
-    
-    assert isinstance(result, dict)
-    assert result['data']['transaction_id'] == Order().transaction_id
-    assert result['data']['id_tag'] == mobile_id
-    assert result['data']['start_time'] == datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    assert result['data']['is_reservation'] == False
-    assert result['data']['is_charging'] == False
-    assert result['data']['tenant_id'] == tenant_id
-    assert result['data']['status_code'] == 201
-    mock_kafka_out.assert_called_once()
-    
-    # Test when order creation fails
-    mock_db_insert_order.return_value = {"message": "insert order failed", "action":"order_creation","action_status":500,"status": 500}
-    result = create_order.create_order_mobile_id(mobile_id, data, tenant_id)
-    assert result["message"] == "insert order failed"
-    assert result["action"] == "order_creation"
-    assert result["action_status"] == 500
-    assert result["status"] == 500
-    mock_kafka_out.assert_called_once()
-
-    # Test when transaction creation fails
-    mock_db_insert_order.return_value = Order()
-    mock_db_insert_transaction.return_value = {"message": "insert transaction failed", "action":"transaction_creation","action_status":500,"status": 500}
-    result = create_order.create_order_mobile_id(mobile_id, data, tenant_id)
-    assert result["message"] == "insert transaction failed"
-    assert result["action"] == "transaction_creation"
-    assert result["action_status"] == 500
-    assert result["status"] == 500
-
 @patch('flask_app.services.create_order.DataValidation.validate_tenants', autospec=True)  
 @patch('flask_app.services.create_order.logger')
 @patch('flask_app.services.create_order.CreateOrder.db_insert_order', autospec=True)
 @patch('flask_app.services.create_order.CreateOrder.db_insert_transaction', autospec=True)
 @patch('flask_app.services.create_order.kafka_out', autospec=True)
-def test_create_order_rfid(mock_kafka_out, mock_db_insert_transaction, mock_db_insert_order, mock_logger,mock_validate_tenants):
+def test_create_order(mock_kafka_out, mock_db_insert_transaction, mock_db_insert_order, mock_logger,mock_validate_tenants):
     create_order = CreateOrder()
 
     mock_validate_tenants.return_value = Tenant()
@@ -141,7 +91,7 @@ def test_create_order_rfid(mock_kafka_out, mock_db_insert_transaction, mock_db_i
 
     # Test when order and transaction creation is successful
     data = KafkaPayload()
-    result = create_order.create_order_rfid(data)
+    result = create_order.create_order(data)
 
     assert isinstance(result, dict)
     assert result['data']['transaction_id'] == Order().transaction_id
@@ -155,7 +105,7 @@ def test_create_order_rfid(mock_kafka_out, mock_db_insert_transaction, mock_db_i
 
     # Test when order creation fails
     mock_db_insert_order.return_value = {"message": "insert order failed", "action":"order_creation","action_status":500,"status": 500}
-    result = create_order.create_order_rfid(data)
+    result = create_order.create_order(data)
     assert result["message"] == "insert order failed"
     assert result["action"] == "order_creation"
     assert result["action_status"] == 500
@@ -164,7 +114,7 @@ def test_create_order_rfid(mock_kafka_out, mock_db_insert_transaction, mock_db_i
     # Test when transaction creation fails
     mock_db_insert_order.return_value = Order()
     mock_db_insert_transaction.return_value = {"message": "insert transaction failed", "action":"transaction_creation","action_status":500,"status": 500}
-    result = create_order.create_order_rfid(data)
+    result = create_order.create_order(data)
     assert result["message"] == "insert transaction failed"
     assert result["action"] == "transaction_creation"
     assert result["action_status"] == 500
