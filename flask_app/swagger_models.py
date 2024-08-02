@@ -115,6 +115,32 @@ class RequestModel:
             "data": fields.Nested(data_model,description="data", required=False,skip_none=True),
         }
         return self.namespace.model("CreateOrderRfidReservationRequestModel", data_models)
+
+    def create_order_reservation_cancel(self):
+        meta_model=self.namespace.model('meta_create_order_reservation_cancel',{
+            "timestamp": fields.String(description="timestamp", required=False,default="2021-09-01 00:00:00"),
+            "producer": fields.String(description="producer", required=False,default="oneems_charger_management"),
+            "version": fields.String(description="version", required=False,default="ocpp_incoming_message"),
+            "type": fields.String(description="type", required=False,default="CancelReservationRequest"),
+            "action": fields.String(description="action", required=False,default="CancelReservation"),
+            "tenant_id": fields.String(description="tenant_id", required=False,default="9d6cb027-ad74-4635-987c-e54b734c3516"),
+        })
+
+        evse_model=self.namespace.model('evse_create_order_reservation_cancel',{
+            "charge_point_id": fields.String(description="charge_point_id", required=False,default="test_add_evse1"),
+            "subprotocol": fields.String(description="subprotocol", required=False,default="ocpp1.6"),
+        })
+
+        data_model=self.namespace.model('data_create_order_reservation_cancel',{
+            "reservation_id": fields.Integer(description="reservation_id", required=False,default=0),
+        })
+
+        data_models = {
+            "meta": fields.Nested(meta_model,description="meta", required=False,skip_none=True),
+            "evse": fields.Nested(evse_model,description="evse", required=False,skip_none=True),
+            "data": fields.Nested(data_model,description="data", required=False,skip_none=True),
+        }
+        return self.namespace.model("CreateOrderRfidReservationCancelRequestModel", data_models)
     
     def create_order_stop_transaction(self):
         meta_model=self.namespace.model('meta_create_order_stop_transaction',{
@@ -131,12 +157,7 @@ class RequestModel:
         })
 
         data_model=self.namespace.model('data_create_order_stop_transaction',{
-            "meter_stop": fields.Integer(description="meter_stop", required=False,default=0),
             "id_tag": fields.String(description="id_tag", required=False,default="xnxpapqidmjsts3twlws"),
-            "timestamp": fields.String(description="timestamp", required=False,default="2021-09-01 00:00:00"),
-            "transaction_id": fields.Integer(description="transaction_id", required=False,default=0),
-            "reason": fields.String(description="reason", required=False,default="Remote"),
-            "transaction_data": fields.String(description="transaction_data", required=False,default=""),
         })
 
         data_models = {

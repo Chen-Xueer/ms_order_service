@@ -23,6 +23,7 @@ class ProducerTypes(enum.Enum):
     CHARGER_MGMT = 'oneems_charger_management'
     CSMS_AS_SERVICE = "CSMS as a Service"
     ORDER_SERVICE = "Order Service"
+    MobileApp_AS_SERVICE = "Mobile App as a Service"
 
 class DriverStatus(enum.Enum):
     ACCEPTED = 'Accepted'
@@ -46,6 +47,7 @@ class TriggerMethod(enum.Enum):
     START_TRANSACTION = 'StartTransaction'
     REMOTE_START = 'RemoteStartTransaction'
     MAKE_RESERVATION = 'ReserveNow'
+    CANCEL_RESERVATION = 'CancelReservation'
     STOP_TRANSACTION = 'RemoteStopTransaction'
     CANCEL_ORDER = 'CancelOrder'
 

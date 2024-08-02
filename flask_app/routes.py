@@ -3,7 +3,9 @@ import uuid
 from flask import request
 from flask_restx import Resource
 from flask_restx._http import HTTPStatus
+from flask_app.services.common_function import kafka_out
 from flask_app.services.update_order import UpdateOrder
+from kafka_app.kafka_management.topic_enum import MsOrderManagement
 from microservice_utils.api_namespace import ApiNamespace
 from flask_app.swagger_models import RequestModel,ResponseModel
 from flask_app.services.create_order import CreateOrder
@@ -175,6 +177,23 @@ class remote_start(Resource):
         return create_order.remote_start_payload(data=KafkaPayload(**data))
 
 # PATH: /orderservice/mobile/make_reservation
+@ns_kafka.route("remote_stop")
+class remote_stop(Resource):
+    #@ns_mobile.doc(security="Authorization")
+    #@permission_required()
+    @ns_kafka.expect(request_model.create_order_stop_transaction(), validate=True)
+    @ns_kafka.marshal_with(response_model.create_order(), skip_none=True)
+    def post(self):
+        #claims = decode_token(get_token())
+
+        data = request.json
+        data.get("meta").update({"request_id":str(uuid.uuid4())})
+        data.get("data").update({"tenant_id":str(claims.get("custom:tenant_id"))})
+        logger.info(f"Request data: {data}")
+
+        kafka_out(topic=MsOrderManagement.STOP_TRANSACTION.value,data=data,request_id=data["meta"]["request_id"])
+
+# PATH: /orderservice/mobile/make_reservation
 @ns_kafka.route("make_reservation")
 class make_reservation(Resource):
     #@ns_mobile.doc(security="Authorization")
@@ -190,4 +209,25 @@ class make_reservation(Resource):
         logger.info(f"Request data: {data}")
 
         create_order = CreateOrder()
-        create_order.create_order(data=KafkaPayload(**data))
+        return create_order.create_order(data=KafkaPayload(**data))
+
+
+# PATH: /orderservice/mobile/cancel_reservation
+@ns_kafka.route("cancel_reservation")
+class cancel_reservation(Resource):
+    #@ns_mobile.doc(security="Authorization")
+    #@permission_required()
+    @ns_kafka.expect(request_model.create_order_reservation_cancel(), validate=True)
+    @ns_kafka.marshal_with(response_model.create_order(), skip_none=True)
+    def post(self):
+        #claims = decode_token(get_token())
+
+        data = request.json
+        data.get("meta").update({"request_id":str(uuid.uuid4())})
+        data.get("data").update({"tenant_id":str(claims.get("custom:tenant_id"))})
+        logger.info(f"Request data: {data}")
+        data = KafkaPayload(**data)
+
+        kafka_out(topic=MsOrderManagement.CANCEL_RESERVATION.value,data=data.to_dict(),request_id=data.meta.request_id)
+
+        return data.to_dict(),HTTPStatus.OK

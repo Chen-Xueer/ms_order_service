@@ -63,6 +63,7 @@ class KafkaPayload:
     expiry_date: Optional[str] = None
     keyword: Optional[str] = None
     status: Optional[str] = None
+    reservation_id: Optional[int] = None
 
     def __init__(self, **kwargs):
         self.meta = KafkaMeta(**kwargs.get("meta", {}))
@@ -81,6 +82,7 @@ class KafkaPayload:
         self.expiry_date = data.get("expiry_date")
         self.keyword = data.get("keyword")
         self.status = data.get("status")
+        self.reservation_id = data.get("reservation_id")
         
     
     def to_dict(self):
@@ -101,6 +103,7 @@ class KafkaPayload:
                     "id_tag_status": self.id_tag_status,
                     "expiry_date": self.expiry_date,
                     "status": self.status,
+                    "reservation_id": self.reservation_id
                 }.items() if value is not None
             }
         }
@@ -140,10 +143,12 @@ class ReservationPayload:
             "meta": self.meta.to_dict(),
             "evse": self.evse.to_dict(),
             "data": {
-                "reservation_id": self.reservation_id,
-                "connector_id": self.connector_id,
-                "expiry_date": self.expiry_date,
-                "id_tag": self.id_tag
+                key: value for key, value in {
+                    "reservation_id": self.reservation_id,
+                    "connector_id": self.connector_id,
+                    "expiry_date": self.expiry_date,
+                    "id_tag": self.id_tag
+                }.items() if value is not None
             }
         }
 

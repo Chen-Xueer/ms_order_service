@@ -64,7 +64,7 @@ class Database:
             pool_use_lifo=True
         )
 
-        _sessionmaker = scoped_session(sessionmaker(bind=engine))
+        _sessionmaker = scoped_session(sessionmaker(bind=engine, expire_on_commit=True))
         return _sessionmaker
 
     def init_session(self) -> Session:

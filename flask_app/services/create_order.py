@@ -28,18 +28,6 @@ class CreateOrder:
             request_id = kwargs.get("request_id")
             requires_payment = kwargs.get("requires_payment")
             
-            if action in [TriggerMethod.REMOTE_START.value, TriggerMethod.START_TRANSACTION.value]:
-                charging_ind=True
-            else:
-                charging_ind=False
-                        
-            if action in [TriggerMethod.MAKE_RESERVATION.value]:
-                reservation_ind=True
-            else:
-                reservation_ind=False
-
-            logger.info(f"charging_ind: {charging_ind}")
-            logger.info(f"reservation_ind: {reservation_ind}")
 
             order_created = Order(
                             tenant_id=tenant_id,
@@ -48,8 +36,8 @@ class CreateOrder:
                             connector_id=connector_id,
                             ev_driver_id=ev_driver_id,
                             tariff_id=None,
-                            is_charging=charging_ind,
-                            is_reservation=reservation_ind,
+                            is_charging=False,
+                            is_reservation=False,
                             requires_payment=requires_payment,
                             create_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                             last_update=None,
@@ -139,6 +127,8 @@ class CreateOrder:
                 data.status_code = 201
 
                 kafka_out(topic=MsEvDriverManagement.DRIVER_VERIFICATION_REQUEST.value,data=data.to_dict(),request_id=data.meta.request_id)
+
+                #logger.info(f"Order created: {order_created.__dict__}")
             
                 return data.to_dict()
         except Exception as e:

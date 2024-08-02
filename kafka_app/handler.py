@@ -10,10 +10,6 @@ from flask_app.services.list_order import ListOrder
 
 def handler(message: KafkaMessage):
     try:
-        database= Database()
-        session=database.init_session()
-        logger.info("Database Initialized")
-
         logger.info(
             f"Handling message: {message.key} {message.topic} {message.headers} {json.dumps(message.payload)}"
         )
@@ -48,7 +44,9 @@ def handler(message: KafkaMessage):
                 MsPaymentManagement.AUTHORIZE_PAYMENT_RESPONSE.value,
                 MsPaymentManagement.CANCEL_PAYMENT_RESPONSE.value,
                 MsOrderManagement.STOP_TRANSACTION.value,
-                MsCSMSManagement.REMOTE_CONTROL_REQUEST.value
+                MsOrderManagement.CANCEL_RESERVATION.value,
+                MsOrderManagement.START_TRANSACTION.value,
+                MsOrderManagement.TRANSACTION_STARTED.value,
             ):
                 logger.info(f"Updating Order: {data}")
                 update_order = UpdateOrder()   
@@ -67,15 +65,11 @@ def handler(message: KafkaMessage):
                 kafka_out(topic=MsOrderManagement.LIST_ORDER_RESPONSE.value, data=output, request_id=message.payload.get("meta").get("request_id"))
                        
     except Exception as e:
-        session.rollback()
         logger.error(e)
-    finally:
-        session.close()
 
 
 
 def validate_request(message: KafkaMessage):
-    validation = DataValidation()
     validate_model = ValidateKafkaMessageModel()
 
     logger.info(f"topic: {message.topic}")
@@ -87,8 +81,9 @@ def validate_request(message: KafkaMessage):
         MsOrderManagement.REJECT_ORDER.value,
         MsOrderManagement.STOP_TRANSACTION.value,
         MsOrderManagement.LIST_ORDER_REQUEST.value,
-        MsCSMSManagement.REMOTE_CONTROL_REQUEST.value,
-
+        MsOrderManagement.CANCEL_RESERVATION.value,
+        MsOrderManagement.START_TRANSACTION.value,
+        MsOrderManagement.TRANSACTION_STARTED.value,
     ]:
         logger.info("Action Not Implemented")
         validate_model.action = "Action Not Implemented"

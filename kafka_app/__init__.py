@@ -6,8 +6,14 @@ def app_init():
     from kafka_app.main import kafka_app
 
     #kafka_app.admin_client.delete_topics([
-    #    MsOrderManagement.CREATE_ORDER.value,MsOrderManagement.CREATE_ORDER_RESPONSE.value,
-    #    MsEvDriverManagement.DRIVER_VERIFICATION_REQUEST.value,MsEvDriverManagement.DRIVER_VERIFICATION_RESPONSE.value,
+    #    'CreateOrder','CreateOrderResponse','RejectOrder','OrderRejected',
+    #    'DriverVerificationRequest','DriverVerificationResponse',
+    #    'ReservationRequest','ReservationResponse',
+    #    'RemoteControlRequest','RemoteControlResponse',
+    #    'GetDriverInfoRequest','GetDriverInfoResponse',
+    #    'StopTransaction','CancelReservation',
+    #    'MeterValue','MeterValuesResponse',
+    #    'StartTransaction','StartTransactionResponse',
     #])
 
     kafka_app.consume(
@@ -19,7 +25,9 @@ def app_init():
             MsPaymentManagement.AUTHORIZE_PAYMENT_RESPONSE.value,
             MsOrderManagement.STOP_TRANSACTION.value,
             MsOrderManagement.LIST_ORDER_REQUEST.value,
-            MsCSMSManagement.REMOTE_CONTROL_REQUEST.value
+            MsOrderManagement.CANCEL_RESERVATION.value,
+            MsOrderManagement.START_TRANSACTION.value,
+            MsOrderManagement.TRANSACTION_STARTED.value,
         ],
         handler,
     )

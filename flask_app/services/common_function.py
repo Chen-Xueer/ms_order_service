@@ -10,6 +10,7 @@ from sqlalchemy import (
     MetaData,
     create_engine,
     Engine,
+    desc,
     make_url,
     TextClause,
     URL,
@@ -74,12 +75,6 @@ class DataValidation:
     
     def validate_order(self,transaction_id):
         order_exists  = self.session.query(Order).filter(Order.transaction_id == transaction_id).first()
-        if order_exists is None:
-            return None
-        return order_exists
-    
-    def validate_order_request(self,request_id):
-        order_exists  = self.session.query(Order).filter(Order.request_id == request_id).first()
         if order_exists is None:
             return None
         return order_exists
