@@ -64,6 +64,8 @@ class KafkaPayload:
     keyword: Optional[str] = None
     status: Optional[str] = None
     reservation_id: Optional[int] = None
+    meter_start: Optional[int] = None
+    meter_stop: Optional[int] = None
 
     def __init__(self, **kwargs):
         self.meta = KafkaMeta(**kwargs.get("meta", {}))
@@ -83,6 +85,8 @@ class KafkaPayload:
         self.keyword = data.get("keyword")
         self.status = data.get("status")
         self.reservation_id = data.get("reservation_id")
+        self.meter_start = data.get("meter_start")
+        self.meter_stop = data.get("meter_stop")
         
     
     def to_dict(self):

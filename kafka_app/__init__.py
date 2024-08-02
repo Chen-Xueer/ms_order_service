@@ -5,16 +5,20 @@ from kafka_app.kafka_management.topic_enum import MsEvDriverManagement,MsPayment
 def app_init():
     from kafka_app.main import kafka_app
 
-    #kafka_app.admin_client.delete_topics([
-    #    'CreateOrder','CreateOrderResponse','RejectOrder','OrderRejected',
-    #    'DriverVerificationRequest','DriverVerificationResponse',
-    #    'ReservationRequest','ReservationResponse',
-    #    'RemoteControlRequest','RemoteControlResponse',
-    #    'GetDriverInfoRequest','GetDriverInfoResponse',
-    #    'StopTransaction','CancelReservation',
-    #    'MeterValue','MeterValuesResponse',
-    #    'StartTransaction','StartTransactionResponse',
-    #])
+    kafka_app.admin_client.delete_topics([
+        'CreateOrder','CreateOrderResponse',
+        'RejectOrder','OrderRejected',
+        'DriverVerificationRequest','DriverVerificationResponse',
+        'AuthorizeResponse',
+        'ReservationRequest','ReservationResponse',
+        'RemoteControlRequest','RemoteControlResponse',
+        'GetDriverInfoRequest','GetDriverInfoResponse',
+        'StopTransaction','StopTransactionResponse',
+        'CancelReservation',
+        'MeterValue','MeterValuesResponse',
+        'StartTransaction','StartTransactionResponse',
+        'TransactionStatus'
+    ])
 
     kafka_app.consume(
         [

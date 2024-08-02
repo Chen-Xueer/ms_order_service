@@ -127,8 +127,6 @@ class CreateOrder:
                 data.status_code = 201
 
                 kafka_out(topic=MsEvDriverManagement.DRIVER_VERIFICATION_REQUEST.value,data=data.to_dict(),request_id=data.meta.request_id)
-
-                #logger.info(f"Order created: {order_created.__dict__}")
             
                 return data.to_dict()
         except Exception as e:

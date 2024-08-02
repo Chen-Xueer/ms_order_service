@@ -14,6 +14,9 @@ class Transaction(Base):
     start_time: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     end_time: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     duration: Mapped[int] = mapped_column(Integer, nullable=True)
+    meter_start: Mapped[int] = mapped_column(Integer, nullable=True)
+    meter_interval: Mapped[int] = mapped_column(Integer, nullable=True)
+    meter_stop: Mapped[int] = mapped_column(Integer, nullable=True)
     paid_by: Mapped[str] = mapped_column(String(50), nullable=True)
     transaction_detail: Mapped[str] = mapped_column(String(3000), nullable=True)
 

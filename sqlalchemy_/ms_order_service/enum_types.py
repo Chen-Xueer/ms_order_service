@@ -45,10 +45,11 @@ class OrderStatus(enum.Enum):
 class TriggerMethod(enum.Enum):
     AUTHORIZE = 'Authorize'
     START_TRANSACTION = 'StartTransaction'
+    STOP_TRANSACTION = 'StopTransaction'
     REMOTE_START = 'RemoteStartTransaction'
+    REMOTE_STOP_TRANSACTION = 'RemoteStopTransaction'
     MAKE_RESERVATION = 'ReserveNow'
     CANCEL_RESERVATION = 'CancelReservation'
-    STOP_TRANSACTION = 'RemoteStopTransaction'
     CANCEL_ORDER = 'CancelOrder'
 
 class StopTransactionReason(enum.Enum):
