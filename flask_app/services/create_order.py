@@ -1,14 +1,11 @@
-import uuid
 from flask_app.database_sessions import Database
 from flask_app.services.common_function import DataValidation
-from flask_app.services.models import KafkaPayload, RemoteStartPayload
+from flask_app.services.models import KafkaPayload
 from microservice_utils.settings import logger
-from kafka_app.kafka_management.topic_enum import MsCSMSManagement, MsEvDriverManagement, MsOrderManagement
-from sqlalchemy_.ms_order_service.enum_types import ReturnActionStatus, ReturnStatus, OrderStatus, TriggerMethod
+from kafka_app.kafka_management.topic_enum import MsEvDriverManagement, MsOrderManagement
+from sqlalchemy_.ms_order_service.enum_types import ReturnActionStatus, ReturnStatus, OrderStatus
 from sqlalchemy_.ms_order_service.order import Order
-from sqlalchemy_.ms_order_service.tenant import Tenant
 from sqlalchemy_.ms_order_service.transaction import Transaction
-from typing import Tuple
 from datetime import datetime
 from flask_app.services.common_function import kafka_out
 
@@ -61,7 +58,10 @@ class CreateOrder:
                             charged_energy=None,
                             duration=None,
                             paid_by=None,
-                            transaction_detail=trans_det
+                            transaction_detail=trans_det,
+                            meter_start = None,
+                            meter_interval = None,
+                            meter_stop = None,
                         )
             self.session.add(transaction_created)
             self.session.commit()

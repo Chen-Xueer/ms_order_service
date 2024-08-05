@@ -124,22 +124,23 @@ class ValidateKafkaMessageModel:
     def to_dict(self):
         return {k: v for k, v in asdict(self).items() if v is not None}
 
+
 @dataclass(init=False)
 class ReservationPayload:
     meta: KafkaMeta
     evse: KafkaEVSE
 
     connector_id: Optional[str] = None
-    expiry_date: Optional[str] = None
     id_tag: Optional[str] = None
+    expiry_date: Optional[str] = None
     reservation_id: Optional[int] = None
 
     def __init__(self, **kwargs):
         self.meta = KafkaMeta(**kwargs.get("meta", {}))
         self.evse = KafkaEVSE(**kwargs.get("evse", {}))
         self.connector_id = kwargs.get("data", {}).get("connector_id")
-        self.expiry_date = kwargs.get("data", {}).get("expiry_date")
         self.id_tag = kwargs.get("data", {}).get("id_tag")
+        self.expiry_date = kwargs.get("data", {}).get("expiry_date")
         self.reservation_id = kwargs.get("data", {}).get("reservation_id")
 
     def to_dict(self):
@@ -155,6 +156,7 @@ class ReservationPayload:
                 }.items() if value is not None
             }
         }
+    
 
 
 @dataclass(init=False)
@@ -187,29 +189,6 @@ class StartTransactionPayload:
         }
 
 
-@dataclass(init=False)
-class RemoteStartPayload:
-    meta: KafkaMeta
-    evse: KafkaEVSE
-
-    connector_id: Optional[str] = None
-    id_tag: Optional[str] = None
-
-    def __init__(self, **kwargs):
-        self.meta = KafkaMeta(**kwargs.get("meta", {}))
-        self.evse = KafkaEVSE(**kwargs.get("evse", {}))
-        self.connector_id = kwargs.get("data", {}).get("connector_id")
-        self.id_tag = kwargs.get("data", {}).get("id_tag")
-
-    def to_dict(self):
-        return {
-            "meta": self.meta.to_dict(),
-            "evse": self.evse.to_dict(),
-            "data": {
-                "connector_id": self.connector_id,
-                "id_tag": self.id_tag
-            }
-        }
 
 @dataclass(init=False)
 class StopTransactionPayload:

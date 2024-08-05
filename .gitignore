@@ -2,15 +2,15 @@
 __pycache__/
 /venv
 backup/
+/argocd/
+application.yaml
 
 # log files
 *.log
 .env.actual
 
-# alembic
-/alembic*
-/alembic.ini
-
 # coverage
 .coverage
 /htmlcov
+
+

@@ -28,9 +28,9 @@ request_model = RequestModel(ns_kafka)
 response_model = ResponseModel(ns_kafka)
 
 claims = {
-    "custom:tenant_id": 1,
+    "custom:tenant_id": '090a45ec-3001-70bd-183f-bd35ce7d7826',
     "custom:role": RoleType.OPERATOR.value,
-    "email": "abc@domain.com"
+    "email": "abc@domain.com",
 }
 
 # PATH: /orderservice/mobile/remote_start

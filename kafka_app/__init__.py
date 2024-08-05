@@ -17,7 +17,8 @@ def app_init():
         'CancelReservation',
         'MeterValue','MeterValuesResponse',
         'StartTransaction','StartTransactionResponse',
-        'TransactionStatus'
+        'TransactionStatus',
+        'StartTransactionRequest','StartTransactionRequestResponse',
     ])
 
     kafka_app.consume(
@@ -32,6 +33,7 @@ def app_init():
             MsOrderManagement.CANCEL_RESERVATION.value,
             MsOrderManagement.START_TRANSACTION.value,
             MsOrderManagement.TRANSACTION_STARTED.value,
+            MsOrderManagement.START_TRANSACTION_REQUEST.value,
         ],
         handler,
     )

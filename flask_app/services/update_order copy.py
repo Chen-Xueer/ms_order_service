@@ -3,7 +3,7 @@ import uuid
 from sqlalchemy import desc
 from flask_app.database_sessions import Database
 from flask_app.services.common_function import DataValidation
-from flask_app.services.models import KafkaPayload, RemoteStartPayload,ReservationPayload, StartTransactionPayload, StopTransactionPayload
+from flask_app.services.models import KafkaPayload, ReservationPayload, StartTransactionPayload, StopTransactionPayload
 from microservice_utils.settings import logger
 from kafka_app.kafka_management.topic_enum import MsCSMSManagement,MsEVSEManagement,MsPaymentManagement,MsOrderManagement
 from sqlalchemy_.ms_order_service.enum_types import OrderStatus, ReturnActionStatus, ReturnStatus,ProducerTypes,TriggerMethod
@@ -146,11 +146,18 @@ class UpdateOrder:
                 logger.info(f"latest_status: {new_order_status}")
 
                 if transaction_exists and order_exist:
+                    transaction_update_fields={}
+
+                    if data.meter_start is not None:
+                        transaction_update_fields["meter_start"] = data.meter_start
+                    if data.meter_stop is not None:
+                        transaction_update_fields["meter_stop"] = data.meter_stop
+                    
                     if current_order_status is not None and \
                         new_order_status is not None and new_order_status not in [OrderStatus.AUTHORIZED.value,OrderStatus.AUTHORIZEDFAILED.value]:
                         logger.info(f"after_authorization_status: {current_order_status}")
                         logger.info(f"latest_status: {new_order_status}")
-                        transaction_update_fields={}
+                        
 
                         if new_order_status == OrderStatus.COMPLETED.value:
                             transaction_update_fields["end_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -213,12 +220,14 @@ class UpdateOrder:
                 kafka_topic = None
 
                 if new_order_status == OrderStatus.CANCELLED.value:
+                    logger.info(f"CANCELLED ORDER")
                     if data.requires_payment == True:
                         kafka_topic = MsPaymentManagement.CANCEL_PAYMENT_REQUEST.value
               
                     kafka_out(topic= MsOrderManagement.REJECT_ORDER_SUCCESS.value,data=data.to_dict(),request_id=data.meta.request_id)
                 
                 elif data.meta.action in TriggerMethod.AUTHORIZE.value or new_order_status == OrderStatus.AUTHORIZEDFAILED.value:
+                    logger.info(f"AUTHORIZE ORDER")
                     if new_order_status == OrderStatus.AUTHORIZEDFAILED.value:
                         if data.meta.action == TriggerMethod.MAKE_RESERVATION.value:
                             data.meta.meta_type = "CancelReservation"
@@ -235,6 +244,7 @@ class UpdateOrder:
                         kafka_topic = MsCSMSManagement.AUTHORIZE_RESPONSE.value
                 
                 elif data.meta.action == TriggerMethod.REMOTE_START.value:                    
+                    logger.info(f"START ORDER2")
                     if data.meta.producer == ProducerTypes.CSMS_AS_SERVICE.value:
                         kafka_topic = MsCSMSManagement.REMOTE_CONTROL_RESPONSE.value
                         start_transaction_payload = StartTransactionPayload()
@@ -250,7 +260,7 @@ class UpdateOrder:
                     else:
                         kafka_topic = MsCSMSManagement.RESERVATION_REQUEST.value
                         data.meta.meta_type = MsCSMSManagement.RESERVATION_REQUEST.value
-                        remote_start_payload = RemoteStartPayload()
+                        remote_start_payload = ReservationPayload()
                         remote_start_payload.meta.producer = data.meta.producer
                         remote_start_payload.meta.request_id = data.meta.request_id
                         remote_start_payload.meta.tenant_id = data.tenant_id
@@ -261,7 +271,9 @@ class UpdateOrder:
                         remote_start_payload.id_tag = data.id_tag
                         remote_start_payload.connector_id = data.connector_id
                         data = remote_start_payload
+
                 elif data.meta.action == TriggerMethod.MAKE_RESERVATION.value and new_order_status in [OrderStatus.AUTHORIZED.value,OrderStatus.AUTHORIZEDFAILED.value]:
+                    logger.info(f"RESERVE ORDER")
                     data.meta.meta_type = "RemoteControlResponse"
                     if data.meta.producer == ProducerTypes.EVSE_AS_SERVICE.value:
                         kafka_topic = MsEVSEManagement.RESERVATION_REQUEST.value
@@ -280,6 +292,7 @@ class UpdateOrder:
                         data = reservation_payload
 
                 elif data.meta.action == TriggerMethod.START_TRANSACTION.value:
+                    logger.info(f"START ORDER")
                     data.meta.meta_type = "RemoteControlResponse"
                     if data.meta.producer == ProducerTypes.OCPP_AS_SERVICE.value:
                         if data.id_tag_status is None:
@@ -295,8 +308,11 @@ class UpdateOrder:
                         start_transaction_payload.status = data.id_tag_status
                         start_transaction_payload.parent_id_tag = order_exist.ev_driver_id
                         data = start_transaction_payload
+
                         kafka_out(topic= MsOrderManagement.CREATE_ORDER_RESPONSE.value,data=data.to_dict(),request_id=data.meta.request_id)
+
                 elif data.meta.action == TriggerMethod.REMOTE_STOP_TRANSACTION.value:
+                    logger.info(f"STOP ORDER2")
                     data.meta.meta_type = "RemoteStopTransaction"
                     stop_transaction_payload = StopTransactionPayload()
                     stop_transaction_payload.meta.request_id = data.meta.request_id
@@ -310,19 +326,25 @@ class UpdateOrder:
                     if data.meta.producer in [ProducerTypes.OCPP_AS_SERVICE.value,ProducerTypes.CHARGER_MGMT.value]:
                         kafka_topic = MsCSMSManagement.REMOTE_CONTROL_REQUEST.value
                     data = stop_transaction_payload
+
                 elif data.meta.action == TriggerMethod.STOP_TRANSACTION.value:
+                    logger.info(f"STOP ORDER")
                     kafka_topic = MsOrderManagement.CREATE_ORDER_RESPONSE.value
+
                 elif data.meta.action == TriggerMethod.CANCEL_RESERVATION.value:
-                        data.meta.meta_type = "CancelReservation"
-                        kafka_topic = MsCSMSManagement.RESERVATION_REQUEST.value
-                        reservation_payload = ReservationPayload()
-                        reservation_payload.meta.request_id = order_exist.request_id
-                        reservation_payload.meta.action = TriggerMethod.CANCEL_RESERVATION.value
-                        reservation_payload.meta.meta_type = MsCSMSManagement.RESERVATION_REQUEST.value
-                        reservation_payload.evse.charge_point_id = data.evse.charge_point_id
-                        reservation_payload.evse.subprotocol = data.evse.subprotocol
-                        reservation_payload.reservation_id = order_exist.transaction_id
-                        data = reservation_payload
+                    logger.info(f"CANCEL RESERVE ORDER")
+                    logger.info(f"cancel_reservation: {data.meta.action}!!!!!")
+                    data.meta.meta_type = "CancelReservation"
+                    kafka_topic = MsCSMSManagement.RESERVATION_REQUEST.value
+                    reservation_payload = ReservationPayload()
+                    reservation_payload.meta.request_id = order_exist.request_id
+                    reservation_payload.meta.action = TriggerMethod.CANCEL_RESERVATION.value
+                    reservation_payload.meta.meta_type = MsCSMSManagement.RESERVATION_REQUEST.value
+                    reservation_payload.evse.charge_point_id = order_exist.charge_point_id
+                    reservation_payload.evse.subprotocol = data.evse.subprotocol
+                    reservation_payload.reservation_id = order_exist.transaction_id
+                    data = reservation_payload
+                    logger.info(f"reservation_payload: {data.to_dict()}")
                     
 
 

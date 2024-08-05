@@ -3,7 +3,7 @@ import uuid
 from sqlalchemy import desc
 from flask_app.database_sessions import Database
 from flask_app.services.common_function import DataValidation
-from flask_app.services.models import KafkaPayload, RemoteStartPayload,ReservationPayload, StartTransactionPayload, StopTransactionPayload
+from flask_app.services.models import KafkaPayload, ReservationPayload, StartTransactionPayload, StopTransactionPayload
 from microservice_utils.settings import logger
 from kafka_app.kafka_management.topic_enum import MsCSMSManagement,MsEVSEManagement,MsPaymentManagement,MsOrderManagement
 from sqlalchemy_.ms_order_service.enum_types import OrderStatus, ReturnActionStatus, ReturnStatus,ProducerTypes,TriggerMethod
@@ -37,12 +37,12 @@ class UpdateOrder:
                 order_exist = self.session.query(Order).filter(Order.request_id == data.meta.request_id).first()
                 logger.info(f"by request id: {order_exist}")
                 
-            if order_exist is None and data.meta.action == TriggerMethod.START_TRANSACTION.value:
+            elif order_exist is None and data.meta.action == TriggerMethod.START_TRANSACTION.value:
                 logger.info(f"by ev_driver_id: {data.id_tag}")
                 logger.info(f"charge_point_id: {data.evse.charge_point_id}")
                 logger.info(f"connector_id: {data.connector_id}")
                 order_exist = self.session.query(Order).filter(Order.ev_driver_id == data.id_tag, Order.status==OrderStatus.PREPARECHARGING.value,Order.charge_point_id == data.evse.charge_point_id,Order.connector_id == data.connector_id).order_by(desc(Order.transaction_id)).first()
-                logger.info(f"latest transaction: {order_exist}")
+                logger.info(f"StartTransaction latest transaction: {order_exist}")
 
                 if order_exist is None:
                     order_exist = self.session.query(Order).filter(Order.ev_driver_id == data.id_tag, Order.status==OrderStatus.AUTHORIZED.value,Order.charge_point_id == data.evse.charge_point_id).order_by(desc(Order.transaction_id)).first()
@@ -53,8 +53,21 @@ class UpdateOrder:
                             create_order = CreateOrder()
                             create_order.create_order(data = data)
                             order_exist = self.session.query(Order).filter(Order.ev_driver_id == data.id_tag, Order.status==OrderStatus.CREATED.value,Order.charge_point_id == data.evse.charge_point_id,Order.connector_id == data.connector_id).order_by(desc(Order.transaction_id)).first()
-        
-            if order_exist is None and data.meta.action in [TriggerMethod.STOP_TRANSACTION.value,TriggerMethod.REMOTE_STOP_TRANSACTION.value]:
+
+            elif order_exist is None and data.meta.action == TriggerMethod.REMOTE_START.value:
+                order_exist = self.session.query(Order).filter(Order.ev_driver_id == data.id_tag, Order.status==OrderStatus.RESERVING.value).order_by(desc(Order.transaction_id)).first()
+                logger.info(f"RemoteStart latest transaction: {order_exist}")
+
+                if order_exist is None:
+                    from flask_app.services.create_order import CreateOrder
+                    create_order = CreateOrder()
+                    create_order.create_order(data = data)
+                    order_exist = self.session.query(Order).filter(Order.ev_driver_id == data.id_tag, Order.status==OrderStatus.CREATED.value,Order.charge_point_id == data.evse.charge_point_id,Order.connector_id == data.connector_id).order_by(desc(Order.transaction_id)).first()
+
+            elif order_exist is None and data.meta.action == TriggerMethod.CANCEL_RESERVATION.value:
+                order_exist = self.session.query(Order).filter(Order.ev_driver_id == data.id_tag, Order.status==OrderStatus.RESERVING.value).order_by(desc(Order.transaction_id)).first()
+
+            elif order_exist is None and data.meta.action in [TriggerMethod.STOP_TRANSACTION.value,TriggerMethod.REMOTE_STOP_TRANSACTION.value]:
                 order_exist = self.session.query(Order).filter(Order.ev_driver_id == data.id_tag, Order.status==OrderStatus.CHARGING.value,Order.charge_point_id == data.evse.charge_point_id).order_by(desc(Order.transaction_id)).first()
                 logger.info(f"stop_transaction: {order_exist}")
 
@@ -175,7 +188,9 @@ class UpdateOrder:
                         "is_charging": charging_ind,
                         "is_reservation": reservation_ind,
                     }
-                    
+
+                    if new_order_status is not None and current_order_status is not None:
+                        order_update_fields["status"] = new_order_status
                     if data.evse.charge_point_id is not None:
                         order_update_fields["charge_point_id"] = data.evse.charge_point_id
                     if data.connector_id is not None:
@@ -218,35 +233,42 @@ class UpdateOrder:
                     if new_order_status == OrderStatus.AUTHORIZEDFAILED.value:
                         if data.meta.action == TriggerMethod.MAKE_RESERVATION.value:
                             data.meta.meta_type = "CancelReservation"
-                        elif data.meta.action in (TriggerMethod.REMOTE_START.value,TriggerMethod.START_TRANSACTION.value):
+                        elif data.meta.action == TriggerMethod.REMOTE_START.value:
                             data.meta.meta_type = "RemoteStopTransaction"
+                        elif data.meta.action == TriggerMethod.START_TRANSACTION.value:
+                            data.meta.meta_type = "StopTransaction"
                         data.meta.action = TriggerMethod.CANCEL_ORDER.value
                         kafka_out(topic= MsOrderManagement.REJECT_ORDER.value,data=data.to_dict(),request_id=data.meta.request_id)
                     
                     data.meta.meta_type = "AuthorizeResponse"
-                    kafka_out(topic= MsOrderManagement.CREATE_ORDER_RESPONSE.value,data=data.to_dict(),request_id=data.meta.request_id)
-                    if data.meta.producer == ProducerTypes.EVSE_AS_SERVICE.value:
-                        kafka_topic = MsEVSEManagement.AUTHORIZE_RESPONSE.value
-                    if data.meta.producer == ProducerTypes.OCPP_AS_SERVICE.value:
-                        kafka_topic = MsCSMSManagement.AUTHORIZE_RESPONSE.value
+                    if new_order_status == OrderStatus.AUTHORIZED.value:
+                        if data.meta.action == TriggerMethod.AUTHORIZE.value:
+                            kafka_out(topic= MsOrderManagement.CREATE_ORDER_RESPONSE.value,data=data.to_dict(),request_id=data.meta.request_id)
+                            if data.meta.producer == ProducerTypes.EVSE_AS_SERVICE.value:
+                                kafka_topic = MsEVSEManagement.AUTHORIZE_RESPONSE.value
+                            if data.meta.producer == ProducerTypes.OCPP_AS_SERVICE.value:
+                                kafka_topic = MsCSMSManagement.AUTHORIZE_RESPONSE.value
+                        
+                        if data.meta.action == TriggerMethod.MAKE_RESERVATION.value:
+                            kafka_topic = MsOrderManagement.RESERVATION_RESPONSE.value
                 
                 elif data.meta.action == TriggerMethod.REMOTE_START.value:                    
                     if data.meta.producer == ProducerTypes.CSMS_AS_SERVICE.value:
                         kafka_topic = MsCSMSManagement.REMOTE_CONTROL_RESPONSE.value
-                        start_transaction_payload = StartTransactionPayload()
-                        start_transaction_payload.meta.request_id = data.meta.request_id
-                        start_transaction_payload.meta.action = TriggerMethod.REMOTE_START.value
-                        start_transaction_payload.meta.meta_type = MsCSMSManagement.REMOTE_CONTROL_RESPONSE.value
-                        start_transaction_payload.evse.charge_point_id = data.evse.charge_point_id
-                        start_transaction_payload.evse.subprotocol = data.evse.subprotocol
-                        start_transaction_payload.transaction_id = order_exist.transaction_id
-                        start_transaction_payload.status = data.status
-                        start_transaction_payload.parent_id_tag = order_exist.ev_driver_id
-                        data = start_transaction_payload
+                        remote_start_transaction_payload = StartTransactionPayload()
+                        remote_start_transaction_payload.meta.request_id = data.meta.request_id
+                        remote_start_transaction_payload.meta.action = TriggerMethod.REMOTE_START.value
+                        remote_start_transaction_payload.meta.meta_type = MsCSMSManagement.REMOTE_CONTROL_RESPONSE.value
+                        remote_start_transaction_payload.evse.charge_point_id = data.evse.charge_point_id
+                        remote_start_transaction_payload.evse.subprotocol = data.evse.subprotocol
+                        remote_start_transaction_payload.transaction_id = order_exist.transaction_id
+                        remote_start_transaction_payload.status = data.status
+                        remote_start_transaction_payload.parent_id_tag = order_exist.ev_driver_id
+                        data = remote_start_transaction_payload
                     else:
                         kafka_topic = MsCSMSManagement.RESERVATION_REQUEST.value
                         data.meta.meta_type = MsCSMSManagement.RESERVATION_REQUEST.value
-                        remote_start_payload = RemoteStartPayload()
+                        remote_start_payload = ReservationPayload()
                         remote_start_payload.meta.producer = data.meta.producer
                         remote_start_payload.meta.request_id = data.meta.request_id
                         remote_start_payload.meta.tenant_id = data.tenant_id
@@ -257,6 +279,7 @@ class UpdateOrder:
                         remote_start_payload.id_tag = data.id_tag
                         remote_start_payload.connector_id = data.connector_id
                         data = remote_start_payload
+
                 elif data.meta.action == TriggerMethod.MAKE_RESERVATION.value and new_order_status in [OrderStatus.AUTHORIZED.value,OrderStatus.AUTHORIZEDFAILED.value]:
                     data.meta.meta_type = "RemoteControlResponse"
                     if data.meta.producer == ProducerTypes.EVSE_AS_SERVICE.value:
@@ -292,6 +315,8 @@ class UpdateOrder:
                         start_transaction_payload.parent_id_tag = order_exist.ev_driver_id
                         data = start_transaction_payload
                         kafka_out(topic= MsOrderManagement.CREATE_ORDER_RESPONSE.value,data=data.to_dict(),request_id=data.meta.request_id)
+                
+                
                 elif data.meta.action == TriggerMethod.REMOTE_STOP_TRANSACTION.value:
                     data.meta.meta_type = "RemoteStopTransaction"
                     stop_transaction_payload = StopTransactionPayload()
@@ -301,24 +326,37 @@ class UpdateOrder:
                     stop_transaction_payload.evse.charge_point_id = data.evse.charge_point_id
                     stop_transaction_payload.evse.subprotocol = data.evse.subprotocol
                     stop_transaction_payload.transaction_id = order_exist.transaction_id
+                    
                     if data.meta.producer == ProducerTypes.EVSE_AS_SERVICE.value:
                         kafka_topic = MsEVSEManagement.REMOTE_CONTROL_REQUEST.value
                     if data.meta.producer in [ProducerTypes.OCPP_AS_SERVICE.value,ProducerTypes.CHARGER_MGMT.value]:
                         kafka_topic = MsCSMSManagement.REMOTE_CONTROL_REQUEST.value
                     data = stop_transaction_payload
+
+
                 elif data.meta.action == TriggerMethod.STOP_TRANSACTION.value:
-                    kafka_topic = MsOrderManagement.CREATE_ORDER_RESPONSE.value
+                    if new_order_status == OrderStatus.COMPLETED.value:
+                        kafka_topic = MsOrderManagement.STOP_TRANSACTION_RESPONSE.value
+
+
                 elif data.meta.action == TriggerMethod.CANCEL_RESERVATION.value:
+                    logger.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!HERE")
+                    logger.info(f"order_exist.status: {order_exist.status}")
+                    if order_exist.status == OrderStatus.RESERVING.value:
                         data.meta.meta_type = "CancelReservation"
                         kafka_topic = MsCSMSManagement.RESERVATION_REQUEST.value
                         reservation_payload = ReservationPayload()
                         reservation_payload.meta.request_id = order_exist.request_id
                         reservation_payload.meta.action = TriggerMethod.CANCEL_RESERVATION.value
                         reservation_payload.meta.meta_type = MsCSMSManagement.RESERVATION_REQUEST.value
-                        reservation_payload.evse.charge_point_id = data.evse.charge_point_id
+                        reservation_payload.evse.charge_point_id = order_exist.charge_point_id
                         reservation_payload.evse.subprotocol = data.evse.subprotocol
                         reservation_payload.reservation_id = order_exist.transaction_id
                         data = reservation_payload
+                        logger.info(f"reservation_payload: {data}")
+                    
+                    if new_order_status == OrderStatus.CANCELLED.value:
+                        kafka_topic = MsOrderManagement.CANCEL_RESERVATION_RESPONSE.value
                     
 
 

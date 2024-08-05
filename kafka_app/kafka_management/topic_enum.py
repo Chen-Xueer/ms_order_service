@@ -17,12 +17,14 @@ class MsOrderManagement(enum.Enum):
     REJECT_ORDER_SUCCESS = "OrderRejected"
     LIST_ORDER_REQUEST = "ListOrderRequest"
     LIST_ORDER_RESPONSE = "ListOrderResponse"
-    STOP_TRANSACTION = "StopTransaction"
-    STOP_TRANSACTION_RESPONSE = "StopTransactionResponse"
-    CANCEL_RESERVATION = "CancelReservation"
-    CANCEL_RESERVATION_RESPONSE = "CancelReservationResponse"
     START_TRANSACTION = "StartTransaction"
     START_TRANSACTION_RESPONSE = "StartTransactionResponse"
+    STOP_TRANSACTION = "StopTransaction"
+    STOP_TRANSACTION_RESPONSE = "StopTransactionResponse"
+    START_TRANSACTION_REQUEST = "StartTransactionRequest"
+    START_TRANSACTION_REQUEST_RESPONSE = "StartTransactionRequestResponse"
+    CANCEL_RESERVATION = "CancelReservation"
+    CANCEL_RESERVATION_RESPONSE = "CancelReservationResponse"
     TRANSACTION_STARTED = "TransactionStatus"
     
 

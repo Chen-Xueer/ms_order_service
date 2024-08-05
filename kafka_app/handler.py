@@ -47,6 +47,7 @@ def handler(message: KafkaMessage):
                 MsOrderManagement.CANCEL_RESERVATION.value,
                 MsOrderManagement.START_TRANSACTION.value,
                 MsOrderManagement.TRANSACTION_STARTED.value,
+                MsOrderManagement.START_TRANSACTION_REQUEST.value,
             ):
                 logger.info(f"Updating Order: {data}")
                 update_order = UpdateOrder()   
@@ -84,6 +85,7 @@ def validate_request(message: KafkaMessage):
         MsOrderManagement.CANCEL_RESERVATION.value,
         MsOrderManagement.START_TRANSACTION.value,
         MsOrderManagement.TRANSACTION_STARTED.value,
+        MsOrderManagement.START_TRANSACTION_REQUEST.value,
     ]:
         logger.info("Action Not Implemented")
         validate_model.action = "Action Not Implemented"
